@@ -1,4 +1,5 @@
-## work-work
+## chinese-workday
+
 今天要上班吗？
 
 
@@ -7,14 +8,14 @@
 ## Install
 
 ```bash
-$ npm install work-work
+$ npm install chinese-workday
 ```
 
 ## Usage
 
 ```js
-// const { isWorkday, isHoiday, getFestival } = require('work-work');
-const ww = require('work-work');
+// const { isWorkday, isHoiday, getFestival } = require('chinese-workday');
+const ww = require('chinese-workday');
 const isWorkday = ww.isWorkday;
 const isHoliday = ww.isHoliday;
 const getFestival = ww.getFestival;
@@ -27,5 +28,5 @@ getFesival('2018-10-01')
 // => 国庆节
 ```
 
-[travis-image]: https://travis-ci.org/yize/work-work.svg?branch=master
-[travis-url]: https://travis-ci.org/yize/work-work
+[travis-image]: https://travis-ci.org/yize/chinese-workday.svg?branch=master
+[travis-url]: https://travis-ci.org/yize/chinese-workday

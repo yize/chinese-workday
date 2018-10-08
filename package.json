@@ -1,5 +1,5 @@
 {
-  "name": "work-work",
+  "name": "chinese-workday",
   "version": "1.0.0",
   "description": "中国工作日",
   "main": "index.js",
@@ -8,16 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yize/work-work.git"
+    "url": "git+https://github.com/yize/chinese-workday.git"
   },
   "keywords": [
-    "workingday",
+    "workday",
+    "chinese-workday",
     "工作日",
     "非节假日"
   ],
   "author": "yize.shc@gmail.com",
   "license": "MIT",
-  "homepage": "https://github.com/yize/work-work#readme",
+  "homepage": "https://github.com/yize/chinese-workday#readme",
   "devDependencies": {
     "jest": "^23.6.0"
   }
