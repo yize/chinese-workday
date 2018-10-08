@@ -1,0 +1,24 @@
+{
+  "name": "work-work",
+  "version": "1.0.0",
+  "description": "中国工作日",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yize/work-work.git"
+  },
+  "keywords": [
+    "workingday",
+    "工作日",
+    "非节假日"
+  ],
+  "author": "yize.shc@gmail.com",
+  "license": "MIT",
+  "homepage": "https://github.com/yize/work-work#readme",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
+}
