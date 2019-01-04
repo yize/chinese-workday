@@ -14,7 +14,7 @@ $ npm install chinese-workday
 ## Usage
 
 ```js
-// const { isWorkday, isHoiday, getFestival } = require('chinese-workday');
+// const { isWorkday, isHoliday, getFestival } = require('chinese-workday');
 const ww = require('chinese-workday');
 const isWorkday = ww.isWorkday;
 const isHoliday = ww.isHoliday;
