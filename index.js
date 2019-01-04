@@ -1,13 +1,14 @@
 // from
 // - 2018 http://www.gov.cn/zhengce/content/2017-11/30/content_5243579.htm
-// - 2019 https://baike.baidu.com/item/2019%E5%B9%B4/3318731 not offical
+// - 2019 http://www.gov.cn/zhengce/content/2018-12/06/content_5346276.htm
 
 "use strict";
 
 module.exports = {
   isWorkday: isWorkday,
   isHoliday: isHoliday,
-  getFestival: getFestival
+  getFestival: getFestival,
+  isAddtionalWorkday: isAddtionalWorkday,
 };
 
 var HOLIDAYS = {
@@ -88,6 +89,11 @@ function isWorkday(day) {
 
 function isHoliday(day) {
   return !isWorkday(day);
+}
+
+function isAddtionalWorkday(day){
+  var fd = formatDate(day);
+  return !!WEEKENDS_WORKDAY[fd.date];
 }
 
 function getFestival(day) {

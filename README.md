@@ -19,10 +19,13 @@ const ww = require('chinese-workday');
 const isWorkday = ww.isWorkday;
 const isHoliday = ww.isHoliday;
 const getFestival = ww.getFestival;
+const isAddtionalWorkday = ww.isAddtionalWorkday;
 
 isWorkday('2018-10-01')
 // => false
 isHoliday('2018-10-01')
+// => true
+isAddtionalWorkday('2019-02-02')
 // => true
 getFesival('2018-10-01')
 // => 国庆节
