@@ -27,7 +27,7 @@ isHoliday('2018-10-01')
 // => true
 isAddtionalWorkday('2019-02-02')
 // => true
-getFesival('2018-10-01')
+getFestival('2018-10-01')
 // => 国庆节
 ```
 
