@@ -21,13 +21,13 @@ const isHoliday = ww.isHoliday;
 const getFestival = ww.getFestival;
 const isAddtionalWorkday = ww.isAddtionalWorkday;
 
-isWorkday('2018-10-01')
+isWorkday('2022-10-01')
 // => false
-isHoliday('2018-10-01')
+isHoliday('2022-10-01')
 // => true
-isAddtionalWorkday('2019-02-02')
+isAddtionalWorkday('2022-01-29')
 // => true
-getFestival('2018-10-01')
+getFestival('2022-10-01')
 // => 国庆节
 ```
 
