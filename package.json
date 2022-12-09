@@ -1,6 +1,6 @@
 {
   "name": "chinese-workday",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "中国工作日",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,8 @@
     "2019",
     "2020",
     "2021",
-    "2022"
+    "2022",
+    "2023"
   ],
   "author": "yize.shc@gmail.com",
   "license": "MIT",
