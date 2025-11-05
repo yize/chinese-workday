@@ -10,7 +10,6 @@
 // - 2025 https://www.gov.cn/zhengce/content/202411/content_6986382.htm
 // - 2026 https://www.gov.cn/zhengce/content/202511/content_7047090.htm
 'use strict'
-
 module.exports = {
     isWorkday: isWorkday,
     isHoliday: isHoliday,
