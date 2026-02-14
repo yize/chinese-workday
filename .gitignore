@@ -1,2 +1,6 @@
 node_modules
 npm-debug.log
+*.sh
+package-lock.json
+PR_READY.md
+PULL_REQUEST_TEMPLATE.md
