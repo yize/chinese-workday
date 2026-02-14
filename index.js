@@ -427,6 +427,18 @@ var WEEKENDS_WORKDAY = {
 // Optimized Date Formatting
 // ============================================================================
 function formatDate(day) {
+  // Handle undefined (today)
+  if (day === undefined) {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const date = String(today.getDate()).padStart(2, '0')
+    return {
+      date: `${year}-${month}-${date}`,
+      weekends: false // Assume workday if undefined
+    }
+  }
+  
   // Handle Date object directly
   if (day instanceof Date) {
     const year = day.getFullYear()
@@ -441,7 +453,43 @@ function formatDate(day) {
     }
   }
   
-  // Handle string input
+  // Handle timestamp (number)
+  if (typeof day === 'number') {
+    const dateObj = new Date(day)
+    const year = dateObj.getFullYear()
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const date = String(dateObj.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${date}`
+    const dayOfWeek = dateObj.getDay()
+    
+    return {
+      date: dateStr,
+      weekends: dayOfWeek === 0 || dayOfWeek === 6
+    }
+  }
+  
+  // Handle string input (support both - and / formats)
+  let dateStr = day
+  
+  // Check if it's a slash format (YYYY/MM/DD)
+  if (day.includes('/')) {
+    const parts = day.split('/')
+    if (parts.length === 3) {
+      const year = parseInt(parts[0])
+      const month = parseInt(parts[1]) - 1
+      const date = parseInt(parts[2])
+      const dateObj = new Date(year, month, date)
+      const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+      const dayOfWeek = dateObj.getDay()
+      
+      return {
+        date: formattedDate,
+        weekends: dayOfWeek === 0 || dayOfWeek === 6
+      }
+    }
+  }
+  
+  // Standard format (YYYY-MM-DD)
   const d = new Date(day)
   
   if (isNaN(d.getTime())) {
@@ -467,7 +515,7 @@ function isWorkday(day) {
   
   // Check cache first
   const cached = dateCache.get(fd.date)
-  if (cached) {
+  if (cached && cached.isWorkday !== undefined) {
     return cached.isWorkday
   }
   
@@ -480,8 +528,9 @@ function isWorkday(day) {
     result = !fd.weekends
   }
   
-  // Cache the result
-  dateCache.set(fd.date, { isWorkday: result })
+  // Cache the result (merge with existing cache if any)
+  const existingCache = dateCache.get(fd.date) || {}
+  dateCache.set(fd.date, { ...existingCache, isWorkday: result })
   
   return result
 }
@@ -500,7 +549,7 @@ function getFestival(day) {
   
   // Check cache
   const cached = dateCache.get(fd.date)
-  if (cached && cached.festival) {
+  if (cached && cached.festival !== undefined) {
     return cached.festival
   }
   
@@ -513,8 +562,9 @@ function getFestival(day) {
     result = fd.weekends ? '周末' : '工作日'
   }
   
-  // Cache the result
-  dateCache.set(fd.date, { festival: result })
+  // Cache the result (merge with existing cache if any)
+  const existingCache = dateCache.get(fd.date) || {}
+  dateCache.set(fd.date, { ...existingCache, festival: result })
   
   return result
 }
