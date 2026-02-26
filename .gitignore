@@ -5,3 +5,19 @@ PR_READY.md
 PULL_REQUEST_TEMPLATE.md
 *.backup
 holidays-*.js
+# Build output
+dist/
+# Test files
+test-*.html
+test-*.js
+# Coverage
+coverage/
+.nyc_output/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+# OS
+.DS_Store
+Thumbs.db

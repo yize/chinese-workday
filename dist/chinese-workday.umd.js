@@ -24,23 +24,6 @@
 
 'use strict'
 
-module.exports = {
-  isWorkday,
-  isHoliday,
-  getFestival,
-  isAddtionalWorkday,
-  isWorkdayBatch,
-  isHolidayBatch,
-  getFestivalBatch,
-  getCacheStats,
-  countWorkdays,
-  getWorkdaysInRange,
-  getHolidaysInRange,
-  nextWorkday,
-  previousWorkday,
-  isWeekend,
-}
-
 // Pre-built regex for fast string validation
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 const DATE_SLASH_REGEX = /^\d{4}\/\d{2}\/\d{2}$/
@@ -982,6 +965,9 @@ function getHolidaysInRange(start, end) {
   }
   return result
 }
+
+// Export functions (must be at the end after all function definitions)
+
 
 return {
   isWorkday: isWorkday,

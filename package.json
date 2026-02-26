@@ -7,7 +7,8 @@
     "test": "node test-simple.js",
     "test:jest": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint . --ext .js"
+    "lint": "eslint . --ext .js",
+    "build:cdn": "node build-cdn.js"
   },
   "repository": {
     "type": "git",
