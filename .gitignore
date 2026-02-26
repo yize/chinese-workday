@@ -3,3 +3,6 @@ npm-debug.log
 *.sh
 PR_READY.md
 PULL_REQUEST_TEMPLATE.md
+*.backup
+test-*.js
+holidays-*.js
