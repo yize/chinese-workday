@@ -19,17 +19,25 @@
 'use strict'
 
 module.exports = {
-  isWorkday: isWorkday,
-  isHoliday: isHoliday,
-  getFestival: getFestival,
-  isAddtionalWorkday: isAddtionalWorkday,
-  // New batch query functions
+  isWorkday,
+  isHoliday,
+  getFestival,
+  isAddtionalWorkday,
   isWorkdayBatch,
   isHolidayBatch,
   getFestivalBatch,
-  // Cache statistics
-  getCacheStats
+  getCacheStats,
+  countWorkdays,
+  getWorkdaysInRange,
+  getHolidaysInRange,
+  nextWorkday,
+  previousWorkday,
+  isWeekend,
 }
+
+// Pre-built regex for fast string validation
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+const DATE_SLASH_REGEX = /^\d{4}\/\d{2}\/\d{2}$/
 
 // from
 // - 2018 https://www.gov.cn/zhengce/content/2017-11/30/content_5243579.htm
@@ -511,27 +519,57 @@ function formatDate(day) {
 // Query Functions
 // ============================================================================
 function isWorkday(day) {
+  let dateKey
+
+  // Fast path for string in YYYY-MM-DD format (avoid formatDate overhead)
+  if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
+    dateKey = day
+
+    // Direct cache lookup
+    const cached = dateCache.get(dateKey)
+    if (cached && cached.isWorkday !== undefined) {
+      return cached.isWorkday
+    }
+
+    // Quick lookup in data structures
+    if (WEEKENDS_WORKDAY[dateKey]) {
+      dateCache.set(dateKey, { isWorkday: true })
+      return true
+    }
+    if (HOLIDAYS[dateKey]) {
+      dateCache.set(dateKey, { isWorkday: false })
+      return false
+    }
+
+    // Determine weekend
+    const d = new Date(dateKey + 'T00:00:00')
+    const dayOfWeek = d.getDay()
+    const isWeek = dayOfWeek === 0 || dayOfWeek === 6
+    const result = !isWeek
+    dateCache.set(dateKey, { isWorkday: result })
+    return result
+  }
+
+  // General path (Date, number, other strings)
   const fd = formatDate(day)
-  
-  // Check cache first
-  const cached = dateCache.get(fd.date)
+  dateKey = fd.date
+
+  // Check cache
+  const cached = dateCache.get(dateKey)
   if (cached && cached.isWorkday !== undefined) {
     return cached.isWorkday
   }
-  
+
   let result
-  if (WEEKENDS_WORKDAY[fd.date]) {
+  if (WEEKENDS_WORKDAY[dateKey]) {
     result = true
-  } else if (HOLIDAYS[fd.date]) {
+  } else if (HOLIDAYS[dateKey]) {
     result = false
   } else {
     result = !fd.weekends
   }
-  
-  // Cache the result (merge with existing cache if any)
-  const existingCache = dateCache.get(fd.date) || {}
-  dateCache.set(fd.date, { ...existingCache, isWorkday: result })
-  
+
+  dateCache.set(dateKey, { isWorkday: result })
   return result
 }
 
@@ -545,14 +583,43 @@ function isAddtionalWorkday(day) {
 }
 
 function getFestival(day) {
+  // Fast path for standard YYYY-MM-DD string
+  if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
+    // Check cache
+    let cached = dateCache.get(day)
+    if (cached && cached.festival) {
+      return cached.festival
+    }
+
+    // Direct lookup
+    let result = WEEKENDS_WORKDAY[day]
+    if (result) {
+      dateCache.set(day, { festival: result })
+      return result
+    }
+    const holiday = HOLIDAYS[day]
+    if (holiday) {
+      dateCache.set(day, { festival: holiday })
+      return holiday
+    }
+
+    // Not holiday: compute weekend
+    const dateObj = new Date(day + 'T00:00:00')
+    const dayOfWeek = dateObj.getDay()
+    const festival = (dayOfWeek === 0 || dayOfWeek === 6) ? '周末' : '工作日'
+    dateCache.set(day, { festival })
+    return festival
+  }
+
+  // General path
   const fd = formatDate(day)
-  
+
   // Check cache
   const cached = dateCache.get(fd.date)
-  if (cached && cached.festival !== undefined) {
+  if (cached && cached.festival) {
     return cached.festival
   }
-  
+
   let result
   if (WEEKENDS_WORKDAY[fd.date]) {
     result = WEEKENDS_WORKDAY[fd.date]
@@ -561,11 +628,8 @@ function getFestival(day) {
   } else {
     result = fd.weekends ? '周末' : '工作日'
   }
-  
-  // Cache the result (merge with existing cache if any)
-  const existingCache = dateCache.get(fd.date) || {}
-  dateCache.set(fd.date, { ...existingCache, festival: result })
-  
+
+  dateCache.set(fd.date, { festival: result })
   return result
 }
 
@@ -589,4 +653,88 @@ function getFestivalBatch(days) {
 // ============================================================================
 function getCacheStats() {
   return dateCache.getStats()
+}
+
+// ============================================================================
+// Additional Helper Functions
+// ============================================================================
+function isWeekend(day) {
+  const fd = formatDate(day)
+  return fd.weekends
+}
+
+function addDays(dayStr, days) {
+  const d = new Date(dayStr + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const date = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${date}`
+}
+
+function nextWorkday(day) {
+  let current = formatDate(day).date
+  for (let i = 1; i <= 7; i++) {
+    const next = addDays(current, i)
+    if (isWorkday(next)) {
+      return next
+    }
+  }
+  return null
+}
+
+function previousWorkday(day) {
+  let current = formatDate(day).date
+  for (let i = 1; i <= 7; i++) {
+    const prev = addDays(current, -i)
+    if (isWorkday(prev)) {
+      return prev
+    }
+  }
+  return null
+}
+
+function countWorkdays(start, end) {
+  const startDate = formatDate(start).date
+  const endDate = formatDate(end).date
+  if (startDate > endDate) return 0
+
+  let count = 0
+  let current = startDate
+  while (current <= endDate) {
+    if (isWorkday(current)) count++
+    current = addDays(current, 1)
+  }
+  return count
+}
+
+function getWorkdaysInRange(start, end) {
+  const startDate = formatDate(start).date
+  const endDate = formatDate(end).date
+  if (startDate > endDate) return []
+
+  const result = []
+  let current = startDate
+  while (current <= endDate) {
+    if (isWorkday(current)) result.push(current)
+    current = addDays(current, 1)
+  }
+  return result
+}
+
+function getHolidaysInRange(start, end) {
+  const startDate = formatDate(start).date
+  const endDate = formatDate(end).date
+  if (startDate > endDate) return []
+
+  const result = []
+  let current = startDate
+  while (current <= endDate) {
+    const festival = getFestival(current)
+    if (festival !== '工作日' && festival !== '周末') {
+      result.push({ date: current, festival })
+    }
+    current = addDays(current, 1)
+  }
+  return result
 }
