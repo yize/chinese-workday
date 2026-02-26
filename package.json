@@ -6,8 +6,7 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint . --ext .js",
-    "prepare": "husky install"
+    "lint": "eslint . --ext .js"
   },
   "repository": {
     "type": "git",
