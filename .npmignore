@@ -1,0 +1,13 @@
+# npm ignore file
+*.md
+*.html
+*.tgz
+*.sh
+build-cdn.js
+codesandbox-demo.js
+cover-template.html
+juejin-article.md
+test.sh
+__tests__
+node_modules
+.npmrc
