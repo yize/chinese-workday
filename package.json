@@ -1,7 +1,8 @@
 {
   "name": "chinese-workday",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "description": "中国工作日",
+  "type": "module",
   "main": "dist/chinese-workday.cjs.js",
   "module": "dist/chinese-workday.esm.js",
   "unpkg": "dist/chinese-workday.min.js",
@@ -9,14 +10,15 @@
   "types": "index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.js",
       "require": "./dist/chinese-workday.cjs.js",
-      "import": "./dist/chinese-workday.esm.js",
       "default": "./dist/chinese-workday.cjs.js"
     }
   },
   "files": [
     "dist",
-    "index.js",
+    "src",
     "index.d.ts"
   ],
   "scripts": {
@@ -25,7 +27,7 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .js",
     "build": "rollup -c",
-    "build:cdn": "rollup -c"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",

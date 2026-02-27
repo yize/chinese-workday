@@ -1,7 +1,8 @@
-(function (factory) {
-  typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-})((function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.chineseWorkday = {}));
+})(this, (function (exports) { 'use strict';
 
   /***********************************************************************
    * Chinese Workday - Performance Optimized Version
@@ -957,22 +958,19 @@
     return result
   }
 
-  // Export functions (must be at the end after all function definitions)
-  module.exports = {
-    isWorkday,
-    isHoliday,
-    getFestival,
-    isAddtionalWorkday,
-    isWorkdayBatch,
-    isHolidayBatch,
-    getFestivalBatch,
-    getCacheStats,
-    countWorkdays,
-    getWorkdaysInRange,
-    getHolidaysInRange,
-    nextWorkday,
-    previousWorkday,
-    isWeekend,
-  };
+  exports.countWorkdays = countWorkdays;
+  exports.getCacheStats = getCacheStats;
+  exports.getFestival = getFestival;
+  exports.getFestivalBatch = getFestivalBatch;
+  exports.getHolidaysInRange = getHolidaysInRange;
+  exports.getWorkdaysInRange = getWorkdaysInRange;
+  exports.isAddtionalWorkday = isAddtionalWorkday;
+  exports.isHoliday = isHoliday;
+  exports.isHolidayBatch = isHolidayBatch;
+  exports.isWeekend = isWeekend;
+  exports.isWorkday = isWorkday;
+  exports.isWorkdayBatch = isWorkdayBatch;
+  exports.nextWorkday = nextWorkday;
+  exports.previousWorkday = previousWorkday;
 
 }));

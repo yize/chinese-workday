@@ -961,7 +961,7 @@ function getHolidaysInRange(start, end) {
 }
 
 // Export functions (must be at the end after all function definitions)
-module.exports = {
+export {
   isWorkday,
   isHoliday,
   getFestival,
