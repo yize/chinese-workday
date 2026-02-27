@@ -25,7 +25,7 @@ console.log(getFestival('2024-10-01')); // "国庆节"
 
 ### 浏览器 / CDN
 ```html
-<script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.15.0/dist/chinese-workday.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.16.0/dist/chinese-workday.min.js"></script>
 <script>
 const ww = window.chineseWorkday;
 console.log(ww.isWorkday('2024-10-01')); // false
@@ -64,7 +64,7 @@ const festivalResults = getFestivalBatch(dates); // ["国庆节", "国庆节", "
 - `isHolidayBatch(dates)` - 批量判断节假日
 - `getFestivalBatch(dates)` - 批量获取节日名称
 
-### 高级功能（v1.15.0+）
+### 高级功能（v1.16.0+）
 - `countWorkdays(startDate, endDate)` - 计算日期范围内的工作日数量
 - `getWorkdaysInRange(startDate, endDate)` - 获取日期范围内的所有工作日
 - `getHolidaysInRange(startDate, endDate)` - 获取日期范围内的所有节假日

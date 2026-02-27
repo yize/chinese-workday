@@ -1,14 +1,31 @@
 {
   "name": "chinese-workday",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "中国工作日",
-  "main": "index.js",
+  "main": "dist/chinese-workday.cjs.js",
+  "module": "dist/chinese-workday.esm.js",
+  "unpkg": "dist/chinese-workday.min.js",
+  "jsdelivr": "dist/chinese-workday.min.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/chinese-workday.cjs.js",
+      "import": "./dist/chinese-workday.esm.js",
+      "default": "./dist/chinese-workday.cjs.js"
+    }
+  },
+  "files": [
+    "dist",
+    "index.js",
+    "index.d.ts"
+  ],
   "scripts": {
     "test": "node test-simple.js",
     "test:jest": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .js",
-    "build:cdn": "node build-cdn.js"
+    "build": "rollup -c",
+    "build:cdn": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -43,6 +60,9 @@
   "license": "MIT",
   "homepage": "https://github.com/yize/chinese-workday#readme",
   "devDependencies": {
-    "jest": "^30.2.0"
+    "jest": "^30.2.0",
+    "rollup": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0"
   }
 }
