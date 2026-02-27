@@ -11,12 +11,17 @@
 ## 🚀 快速开始
 
 ### Node.js / npm
+
 ```bash
 npm install chinese-workday
 ```
 
 ```js
+// CommonJS
 const { isWorkday, isHoliday, getFestival } = require('chinese-workday');
+
+// ES Module
+import { isWorkday, isHoliday, getFestival } from 'chinese-workday';
 
 console.log(isWorkday('2024-10-01')); // false (国庆节)
 console.log(isHoliday('2024-10-01')); // true
@@ -24,12 +29,26 @@ console.log(getFestival('2024-10-01')); // "国庆节"
 ```
 
 ### 浏览器 / CDN
+
 ```html
-<script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.16.0/dist/chinese-workday.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.16.1/dist/chinese-workday.min.js"></script>
 <script>
-const ww = window.chineseWorkday;
-console.log(ww.isWorkday('2024-10-01')); // false
+  const { isWorkday } = window.chineseWorkday;
+  console.log(isWorkday('2024-10-01')); // false
 </script>
+```
+
+## 📁 项目结构
+
+```
+chinese-workday/
+├── src/              # 源码
+├── dist/             # 构建产物
+│   ├── .cjs.js       # CommonJS
+│   ├── .esm.js       # ES Module
+│   └── .min.js       # 浏览器/CDN
+├── __tests__/        # 测试
+└── bench/            # 性能测试
 ```
 
 ## ⚡ 性能优势
@@ -41,79 +60,85 @@ console.log(ww.isWorkday('2024-10-01')); // false
 | **批量查询** | ~60% 更快 | 基准 |
 | **内存占用** | ~30% 更少 | 基准 |
 
-### 批量查询示例（推荐用于多日期场景）
+### 批量查询（推荐多日期场景）
+
 ```js
-const { isWorkdayBatch, getFestivalBatch } = require('chinese-workday');
+import { isWorkdayBatch, getFestivalBatch } from 'chinese-workday';
 
 const dates = ['2024-10-01', '2024-10-02', '2024-10-03'];
 const workdayResults = isWorkdayBatch(dates); // [false, false, false]
 const festivalResults = getFestivalBatch(dates); // ["国庆节", "国庆节", "国庆节"]
 ```
 
-## 📊 API 参考
+## 📊 API
 
 ### 基础查询
-- `isWorkday(date)` - 判断是否为工作日（包含调休）
-- `isHoliday(date)` - 判断是否为节假日  
-- `getFestival(date)` - 获取节日名称
-- `isAddtionalWorkday(date)` - 判断是否为调休工作日
-- `isWeekend(date)` - 判断是否为周末
 
-### 批量查询（高性能）
-- `isWorkdayBatch(dates)` - 批量判断工作日
-- `isHolidayBatch(dates)` - 批量判断节假日
-- `getFestivalBatch(dates)` - 批量获取节日名称
+| 方法 | 说明 |
+|------|------|
+| `isWorkday(date)` | 判断是否为工作日（含调休）|
+| `isHoliday(date)` | 判断是否为节假日 |
+| `getFestival(date)` | 获取节日名称 |
+| `isAddtionalWorkday(date)` | 判断是否为调休工作日 |
+| `isWeekend(date)` | 判断是否为周末 |
 
-### 高级功能（v1.16.0+）
-- `countWorkdays(startDate, endDate)` - 计算日期范围内的工作日数量
-- `getWorkdaysInRange(startDate, endDate)` - 获取日期范围内的所有工作日
-- `getHolidaysInRange(startDate, endDate)` - 获取日期范围内的所有节假日
-- `nextWorkday(date)` - 获取下一个工作日
-- `previousWorkday(date)` - 获取上一个工作日
+### 批量查询
 
-### 缓存统计
-- `getCacheStats()` - 获取缓存使用统计
+| 方法 | 说明 |
+|------|------|
+| `isWorkdayBatch(dates)` | 批量判断工作日 |
+| `isHolidayBatch(dates)` | 批量判断节假日 |
+| `getFestivalBatch(dates)` | 批量获取节日名称 |
 
-### 支持的日期格式
-- 字符串: `'2024-10-01'`
-- Date 对象: `new Date('2024-10-01')`
-- 时间戳: `1727712000000`
+### 高级功能
+
+| 方法 | 说明 |
+|------|------|
+| `countWorkdays(start, end)` | 计算工作日数量 |
+| `getWorkdaysInRange(start, end)` | 获取所有工作日 |
+| `getHolidaysInRange(start, end)` | 获取所有节假日 |
+| `nextWorkday(date)` | 获取下一个工作日 |
+| `previousWorkday(date)` | 获取上一个工作日 |
+
+### 其他
+
+| 方法 | 说明 |
+|------|------|
+| `getCacheStats()` | 获取缓存统计 |
+| `addDays(date, days)` | 日期加减 |
+
+### 支持的输入格式
+
+```js
+isWorkday('2024-10-01')        // 字符串
+isWorkday(new Date())          // Date 对象
+isWorkday(1727712000000)       // 时间戳
+```
 
 ## 🎯 使用场景
 
-- **考勤系统**: 准确计算工作日出勤
-- **工资计算**: 区分工作日、周末、节假日薪资
-- **项目排期**: 自动排除节假日的工作日计算  
-- **API 服务**: 为业务系统提供日期判断服务
-- **数据分析**: 工作日相关的业务指标分析
-- **前端应用**: 通过 CDN 直接在浏览器中使用
+- 考勤系统 · 工资计算 · 项目排期
+- API 服务 · 数据分析 · 前端应用
 
 ## 📅 数据覆盖
 
-✅ **完整支持 2011-2026 年** 中国法定节假日和调休安排  
-✅ 数据来源：国务院官方公告  
-✅ 每年及时更新最新节假日安排
+- ✅ 完整支持 **2011-2026 年** 法定节假日和调休
+- ✅ 数据来源：国务院官方公告
+- ✅ 每年及时更新
 
-## 🏆 为什么选择 chinese-workday？
+## 🏆 特点
 
-1. **高性能**: 内置 LRU 缓存，批量查询优化
-2. **零依赖**: 不需要额外的日期库
-3. **数据完整**: 覆盖到 2026 年的前瞻性数据
-4. **功能丰富**: 基础 + 高级功能全覆盖
-5. **多平台支持**: Node.js + 浏览器 CDN
-6. **简单易用**: 直观的 API 设计
-7. **社区认可**: GitHub stars 最多的同类项目
-
-## 🧪 测试与质量
-
-- 100% 测试覆盖率
-- TypeScript 类型支持
-- 持续集成验证
+1. 高性能 · 内置 LRU 缓存
+2. 零依赖
+3. ESM + CJS 双支持
+4. 浏览器 CDN 直通
+5. TypeScript 类型支持
+6. 简单易用
 
 ## 📄 许可证
 
-MIT License - 免费开源，商业友好
+MIT License
 
 ---
 
-**Note**: 数据覆盖 2011-2026 年 · 定期更新国务院最新节假日安排
+数据覆盖 2011-2026 年 · 定期更新国务院最新节假日安排
