@@ -39,7 +39,7 @@ jobs:
     - name: Run comprehensive validation
       run: |
         node -e "
-        const ww = require('./index.js');
+        const ww = require('./src/index.js');
         // Test all exported functions
         console.log('Testing basic functions...');
         console.log('isWorkday:', ww.isWorkday('2024-10-01'));
