@@ -51,6 +51,11 @@ export function getFestival(day: string | Date | number): string
  * @param day Date string (YYYY-MM-DD), Date object, or timestamp
  * @returns boolean
  */
+export function isAdditionalWorkday(day: string | Date | number): boolean
+
+/**
+ * @deprecated Use isAdditionalWorkday instead
+ */
 export function isAddtionalWorkday(day: string | Date | number): boolean
 
 /**

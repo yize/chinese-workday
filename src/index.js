@@ -794,9 +794,16 @@ function isHoliday(day) {
   return !isWorkday(day)
 }
 
-function isAddtionalWorkday(day) {
+function isAdditionalWorkday(day) {
   const fd = formatDate(day)
   return !!WEEKENDS_WORKDAY[fd.date]
+}
+
+function isAddtionalWorkday(day) {
+  console.warn(
+    'DEPRECATED: isAddtionalWorkday is deprecated. Please use isAdditionalWorkday instead.'
+  )
+  return isAdditionalWorkday(day)
 }
 
 function getFestival(day) {
@@ -2658,6 +2665,7 @@ export {
   isHoliday,
   getFestival,
   isAddtionalWorkday,
+  isAdditionalWorkday,
   isWorkdayBatch,
   isHolidayBatch,
   getFestivalBatch,
