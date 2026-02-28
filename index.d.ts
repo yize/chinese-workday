@@ -15,6 +15,16 @@ export interface HolidayInfo {
   festival: string;
 }
 
+export interface LunarInfo {
+  date: string;
+  lunarYear: number | null;
+  lunarMonth: number | null;
+  lunarDay: number | null;
+  lunarString: string;
+  lunarFestival: string;
+  dayOfWeek: string;
+}
+
 /**
  * Check if a date is a workday (including adjusted workdays)
  * @param day Date string (YYYY-MM-DD), Date object, or timestamp
@@ -58,6 +68,11 @@ export function getFestivalBatch(days: (string | Date | number)[]): string[];
 // Cache statistics
 export function getCacheStats(): CacheStats;
 
+/**
+ * Clear the query cache
+ */
+export function clearCache(): void;
+
 // Advanced functions (v1.3.0+)
 /**
  * Count workdays between two dates (inclusive)
@@ -96,3 +111,10 @@ export function nextWorkday(day: string | Date | number): string | null;
  * @returns Previous workday (YYYY-MM-DD format) or null if not found within 7 days
  */
 export function previousWorkday(day: string | Date | number): string | null;
+
+/**
+ * Get lunar calendar information for a date
+ * @param day Date string (YYYY-MM-DD), Date object, or timestamp
+ * @returns Lunar calendar info including lunar year, month, day, and festival
+ */
+export function getLunarInfo(day: string | Date | number): LunarInfo;

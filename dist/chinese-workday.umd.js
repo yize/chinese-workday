@@ -868,9 +868,14 @@
 
   // ============================================================================
   // Cache Statistics
-  // ============================================================================
   function getCacheStats() {
     return dateCache.getStats()
+  }
+
+  function clearCache() {
+    dateCache.cache.clear();
+    dateCache.hits = 0;
+    dateCache.misses = 0;
   }
 
   // ============================================================================
@@ -958,11 +963,101 @@
     return result
   }
 
+  // ============================================================================
+  // Lunar Calendar Support (农历支持)
+  // ============================================================================
+
+  const LUNAR_NEW_YEAR = {
+    '2011': '2011-02-03',
+    '2012': '2012-01-23',
+    '2013': '2013-02-10',
+    '2014': '2014-01-31',
+    '2015': '2015-02-19',
+    '2016': '2016-02-08',
+    '2017': '2017-01-28',
+    '2018': '2018-02-16',
+    '2019': '2019-02-05',
+    '2020': '2020-01-25',
+    '2021': '2021-02-12',
+    '2022': '2022-02-01',
+    '2023': '2023-01-22',
+    '2024': '2024-02-10',
+    '2025': '2025-01-29',
+    '2026': '2026-02-17',
+  };
+
+  function getDaysBetween(date1, date2) {
+    const d1 = new Date(date1 + 'T00:00:00');
+    const d2 = new Date(date2 + 'T00:00:00');
+    return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24))
+  }
+
+  function getLunarYearFromSolar(solarDate) {
+    const year = parseInt(solarDate.split('-')[0]);
+    for (let y = year; y >= year - 1; y--) {
+      const nyStr = LUNAR_NEW_YEAR[String(y)];
+      if (!nyStr) continue
+      const daysFromNY = getDaysBetween(solarDate, nyStr);
+      if (daysFromNY >= 0) return { lunarYear: y, daysFromNewYear: daysFromNY }
+    }
+    const nyStr = LUNAR_NEW_YEAR[String(year + 1)];
+    if (nyStr) {
+      const daysFromNY = getDaysBetween(solarDate, nyStr);
+      if (daysFromNY >= 0) return { lunarYear: year + 1, daysFromNewYear: daysFromNY }
+    }
+    return null
+  }
+
+  function getLunarMonthAndDay(daysFromNewYear) {
+    const monthLengths = [29, 30];
+    let remaining = daysFromNewYear;
+    let month = 1;
+    while (remaining >= 0) {
+      const daysInMonth = monthLengths[(month - 1) % 2];
+      if (remaining < daysInMonth) return { lunarMonth: month, lunarDay: remaining + 1 }
+      remaining -= daysInMonth;
+      month++;
+    }
+    return { lunarMonth: 1, lunarDay: 1 }
+  }
+
+  function getLunarDateString(lunarMonth, lunarDay) {
+    const months = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '腊月'];
+    const days = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+      '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+      '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+    return `${months[lunarMonth] || lunarMonth + '月'}${days[lunarDay] || lunarDay}`
+  }
+
+  function getFestivalByLunar(month, day) {
+    const festivals = { '1-1': '春节', '1-15': '元宵节', '5-5': '端午节', '8-15': '中秋节', '9-9': '重阳节', '12-8': '腊八节', '12-23': '小年' };
+    return festivals[`${month}-${day}`] || null
+  }
+
+  function getLunarInfo(day) {
+    const fd = formatDate(day);
+    const lunar = getLunarYearFromSolar(fd.date);
+    if (!lunar) return { date: fd.date, lunarYear: null, lunarMonth: null, lunarDay: null, lunarString: '', lunarFestival: '', dayOfWeek: fd.weekends ? '周末' : '工作日' }
+    
+    const monthInfo = getLunarMonthAndDay(lunar.daysFromNewYear);
+    return {
+      date: fd.date,
+      lunarYear: lunar.lunarYear,
+      lunarMonth: monthInfo.lunarMonth,
+      lunarDay: monthInfo.lunarDay,
+      lunarString: getLunarDateString(monthInfo.lunarMonth, monthInfo.lunarDay),
+      lunarFestival: getFestivalByLunar(monthInfo.lunarMonth, monthInfo.lunarDay) || '',
+      dayOfWeek: fd.weekends ? '周末' : '工作日'
+    }
+  }
+
+  exports.clearCache = clearCache;
   exports.countWorkdays = countWorkdays;
   exports.getCacheStats = getCacheStats;
   exports.getFestival = getFestival;
   exports.getFestivalBatch = getFestivalBatch;
   exports.getHolidaysInRange = getHolidaysInRange;
+  exports.getLunarInfo = getLunarInfo;
   exports.getWorkdaysInRange = getWorkdaysInRange;
   exports.isAddtionalWorkday = isAddtionalWorkday;
   exports.isHoliday = isHoliday;
