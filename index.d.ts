@@ -270,3 +270,48 @@ export function isWithinOfficeHours(
   date: Date | string | number,
   options?: OfficeHoursOptions
 ): boolean
+
+// Leave management functions (v1.9.0+)
+export interface LeaveBalances {
+  annual: number
+  sick: number
+  personal: number
+  marriage: number
+  maternity: number
+  paternity: number
+  custom: { [type: string]: number }
+}
+export function setLeaveBalance(userId: string, balances: Partial<LeaveBalances>): void
+export function getLeaveBalance(userId: string): LeaveBalances | null
+
+export interface LeaveApplicationResult {
+  success: boolean
+  message: string
+  leaveDays?: number
+  remainingBalance: LeaveBalances | null
+}
+export function applyLeave(
+  userId: string,
+  leaveType: string,
+  startDate: string | Date | number,
+  endDate: string | Date | number,
+  includeWorkdays?: boolean
+): LeaveApplicationResult
+
+export function addLeaveDays(
+  userId: string,
+  leaveType: string,
+  days: number | { [type: string]: number }
+): LeaveApplicationResult
+
+export interface LeaveRecord {
+  startDate: string | Date | number
+  endDate: string | Date | number
+  type: string
+  approved: boolean
+}
+export function calculateActualWorkdays(
+  startDate: string | Date | number,
+  endDate: string | Date | number,
+  leaveRecords?: LeaveRecord[]
+): number

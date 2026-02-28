@@ -1909,6 +1909,192 @@ function isWithinOfficeHours(date, options = {}) {
   return true
 }
 
+// ============================================================================
+// Leave Management Functions (New Features)
+// ============================================================================
+
+// Store user leave balances
+let leaveBalances = {}
+
+/**
+ * Set initial leave balance for a user
+ * @param {string} userId User identifier
+ * @param {Object} balances Leave balances object
+ * @param {number} balances.annual Annual leave days
+ * @param {number} balances.sick Sick leave days
+ * @param {number} balances.personal Personal leave days
+ * @param {number} balances.marriage Marriage leave days
+ * @param {number} balances.maternity Maternity leave days
+ * @param {number} balances.paternity Paternity leave days
+ * @param {Object} balances.custom Custom leave types and balances
+ */
+function setLeaveBalance(userId, balances) {
+  const defaultBalances = {
+    annual: 0,
+    sick: 0,
+    personal: 0,
+    marriage: 0,
+    maternity: 0,
+    paternity: 0,
+    custom: {}
+  }
+
+  leaveBalances[userId] = { ...defaultBalances, ...balances }
+}
+
+/**
+ * Get leave balance for a user
+ * @param {string} userId User identifier
+ * @returns {Object} Leave balances object
+ */
+function getLeaveBalance(userId) {
+  return leaveBalances[userId] || null
+}
+
+/**
+ * Apply for leave and update balance
+ * @param {string} userId User identifier
+ * @param {string} leaveType Type of leave ('annual', 'sick', 'personal', etc.)
+ * @param {string|Date|number} startDate Start date of leave
+ * @param {string|Date|number} endDate End date of leave
+ * @param {boolean} includeWorkdays Whether to include workdays in calculation (default: true)
+ * @returns {Object} Result object with success status and message
+ */
+function applyLeave(userId, leaveType, startDate, endDate, includeWorkdays = true) {
+  const userBalance = leaveBalances[userId]
+  if (!userBalance) {
+    return { success: false, message: 'User not found', remainingBalance: null }
+  }
+
+  // Calculate leave days based on type
+  let leaveDays
+  if (includeWorkdays) {
+    leaveDays = countWorkdays(startDate, endDate)
+  } else {
+    leaveDays = getTotalDays(startDate, endDate)
+  }
+
+  // Check if it's a custom leave type or predefined type
+  if (leaveType === 'custom') {
+    return {
+      success: false,
+      message: 'For custom leave, specify the exact custom type',
+      remainingBalance: userBalance
+    }
+  } else if (userBalance.hasOwnProperty(leaveType)) {
+    if (userBalance[leaveType] < leaveDays) {
+      return {
+        success: false,
+        message: `Insufficient ${leaveType} leave balance`,
+        remainingBalance: userBalance
+      }
+    }
+
+    // Deduct leave days from balance
+    userBalance[leaveType] -= leaveDays
+
+    return {
+      success: true,
+      message: `${leaveDays} days of ${leaveType} leave applied successfully`,
+      leaveDays: leaveDays,
+      remainingBalance: { ...userBalance }
+    }
+  } else {
+    return {
+      success: false,
+      message: `Unknown leave type: ${leaveType}`,
+      remainingBalance: userBalance
+    }
+  }
+}
+
+/**
+ * Add leave days to user balance
+ * @param {string} userId User identifier
+ * @param {string} leaveType Type of leave
+ * @param {number|Object} days Days to add (for custom leave types, pass an object)
+ * @returns {Object} Result object
+ */
+function addLeaveDays(userId, leaveType, days) {
+  const userBalance = leaveBalances[userId]
+  if (!userBalance) {
+    return { success: false, message: 'User not found', remainingBalance: null }
+  }
+
+  if (userBalance.hasOwnProperty(leaveType)) {
+    // Add to predefined leave type
+    userBalance[leaveType] = (userBalance[leaveType] || 0) + days
+
+    return {
+      success: true,
+      message: `${days} days added to ${leaveType} leave`,
+      remainingBalance: { ...userBalance }
+    }
+  } else if (leaveType === 'custom' && typeof days === 'object') {
+    // For custom leaves, days is an object with leave type and value
+    for (const [customType, customDays] of Object.entries(days)) {
+      userBalance.custom[customType] = (userBalance.custom[customType] || 0) + customDays
+    }
+
+    return {
+      success: true,
+      message: 'Custom leave days added',
+      remainingBalance: { ...userBalance }
+    }
+  } else if (typeof days === 'number' && leaveType.startsWith('custom_')) {
+    // For specific custom leave type like 'custom_study', 'custom_emergency', etc.
+    userBalance.custom[leaveType.substring(7)] =
+      (userBalance.custom[leaveType.substring(7)] || 0) + days
+
+    return {
+      success: true,
+      message: `${days} days added to custom ${leaveType.substring(7)} leave`,
+      remainingBalance: { ...userBalance }
+    }
+  } else {
+    return {
+      success: false,
+      message: `Unknown leave type: ${leaveType}`,
+      remainingBalance: userBalance
+    }
+  }
+}
+
+/**
+ * Calculate actual working days in a period excluding approved leaves
+ * @param {string|Date|number} startDate Start date
+ * @param {string|Date|number} endDate End date
+ * @param {Array} leaveRecords Array of leave records with startDate, endDate, and type
+ * @returns {number} Number of actual working days after excluding approved leaves
+ */
+function calculateActualWorkdays(startDate, endDate, leaveRecords = []) {
+  // First calculate total workdays in the range
+  const totalWorkdays = countWorkdays(startDate, endDate)
+
+  // Calculate workdays during leave periods
+  let totalLeaveWorkdays = 0
+  for (const leave of leaveRecords) {
+    if (leave.approved) {
+      // Only count approved leaves
+      // Find the intersection of leave period and the given range
+      const leaveStart = formatDate(leave.startDate).date
+      const leaveEnd = formatDate(leave.endDate).date
+      const rangeStart = formatDate(startDate).date
+      const rangeEnd = formatDate(endDate).date
+
+      // Calculate intersection
+      const intersectStart = leaveStart > rangeStart ? leaveStart : rangeStart
+      const intersectEnd = leaveEnd < rangeEnd ? leaveEnd : rangeEnd
+
+      if (intersectStart <= intersectEnd) {
+        totalLeaveWorkdays += countWorkdays(intersectStart, intersectEnd)
+      }
+    }
+  }
+
+  return Math.max(0, totalWorkdays - totalLeaveWorkdays)
+}
+
 // Export functions (must be at the end after all function definitions)
 export {
   isWorkday,
@@ -1954,5 +2140,11 @@ export {
   calculateWorkHours,
   getWeekRange,
   getMonthRange,
-  isWithinOfficeHours
+  isWithinOfficeHours,
+  // Leave management functions added in v1.9.0
+  setLeaveBalance,
+  getLeaveBalance,
+  applyLeave,
+  addLeaveDays,
+  calculateActualWorkdays
 }
