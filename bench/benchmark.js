@@ -6,7 +6,7 @@
 
 'use strict'
 
-const workday = require('./index.js')
+import * as workday from '../src/index.js'
 
 // Test data - 100 random dates
 const testDates = []

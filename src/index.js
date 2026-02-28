@@ -648,17 +648,17 @@ var WEEKENDS_WORKDAY = {
 }
 
 // ============================================================================
-// Optimized Date Formatting
+// Highly Optimized Date Formatting
 // ============================================================================
 function formatDate(day) {
   // Handle undefined (today)
   if (day === undefined) {
     const today = new Date()
     const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, '0')
-    const date = String(today.getDate()).padStart(2, '0')
+    const month = today.getMonth() + 1
+    const date = today.getDate()
     return {
-      date: `${year}-${month}-${date}`,
+      date: `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`,
       weekends: false // Assume workday if undefined
     }
   }
@@ -666,9 +666,9 @@ function formatDate(day) {
   // Handle Date object directly
   if (day instanceof Date) {
     const year = day.getFullYear()
-    const month = String(day.getMonth() + 1).padStart(2, '0')
-    const date = String(day.getDate()).padStart(2, '0')
-    const dateStr = `${year}-${month}-${date}`
+    const month = day.getMonth() + 1
+    const date = day.getDate()
+    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`
     const dayOfWeek = day.getDay()
 
     return {
@@ -681,9 +681,9 @@ function formatDate(day) {
   if (typeof day === 'number') {
     const dateObj = new Date(day)
     const year = dateObj.getFullYear()
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const date = String(dateObj.getDate()).padStart(2, '0')
-    const dateStr = `${year}-${month}-${date}`
+    const month = dateObj.getMonth() + 1
+    const date = dateObj.getDate()
+    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`
     const dayOfWeek = dateObj.getDay()
 
     return {
@@ -693,7 +693,6 @@ function formatDate(day) {
   }
 
   // Handle string input (support both - and / formats)
-
   // Check if it's a slash format (YYYY/MM/DD)
   if (day.includes('/')) {
     const parts = day.split('/')
@@ -702,11 +701,14 @@ function formatDate(day) {
       const month = parseInt(parts[1]) - 1
       const date = parseInt(parts[2])
       const dateObj = new Date(year, month, date)
-      const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+      const formattedYear = dateObj.getFullYear()
+      const formattedMonth = dateObj.getMonth() + 1
+      const formattedDate = dateObj.getDate()
+      const formattedDateStr = `${formattedYear}-${formattedMonth < 10 ? '0' : ''}${formattedMonth}-${formattedDate < 10 ? '0' : ''}${formattedDate}`
       const dayOfWeek = dateObj.getDay()
 
       return {
-        date: formattedDate,
+        date: formattedDateStr,
         weekends: dayOfWeek === 0 || dayOfWeek === 6
       }
     }
@@ -720,12 +722,12 @@ function formatDate(day) {
   }
 
   const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const date = String(d.getDate()).padStart(2, '0')
+  const month = d.getMonth() + 1
+  const date = d.getDate()
   const dayOfWeek = d.getDay()
 
   return {
-    date: `${year}-${month}-${date}`,
+    date: `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`,
     weekends: dayOfWeek === 0 || dayOfWeek === 6
   }
 }
@@ -852,7 +854,37 @@ function getFestival(day) {
 // Batch Query Functions (New Feature)
 // ============================================================================
 function isWorkdayBatch(days) {
-  return days.map((day) => isWorkday(day))
+  // Pre-format all dates in batch to avoid duplicate formatting
+  const dates = days.map((day) => {
+    if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
+      return day
+    }
+    return formatDate(day).date
+  })
+
+  // Process each formatted date and cache results
+  return dates.map((date) => {
+    // Check cache first
+    const cached = dateCache.get(date)
+    if (cached && cached.isWorkday !== undefined) {
+      return cached.isWorkday
+    }
+
+    // Direct lookup
+    let result
+    if (WEEKENDS_WORKDAY[date]) {
+      result = true
+    } else if (HOLIDAYS[date]) {
+      result = false
+    } else {
+      const d = new Date(date + 'T00:00:00')
+      const dayOfWeek = d.getDay()
+      result = !(dayOfWeek === 0 || dayOfWeek === 6)
+    }
+
+    dateCache.set(date, { isWorkday: result })
+    return result
+  })
 }
 
 function isHolidayBatch(days) {
@@ -860,7 +892,37 @@ function isHolidayBatch(days) {
 }
 
 function getFestivalBatch(days) {
-  return days.map((day) => getFestival(day))
+  // Pre-format all dates in batch to avoid duplicate formatting
+  const dates = days.map((day) => {
+    if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
+      return day
+    }
+    return formatDate(day).date
+  })
+
+  // Process each formatted date and cache results
+  return dates.map((date) => {
+    // Check cache first
+    const cached = dateCache.get(date)
+    if (cached && cached.festival) {
+      return cached.festival
+    }
+
+    // Direct lookup
+    let result
+    if (WEEKENDS_WORKDAY[date]) {
+      result = WEEKENDS_WORKDAY[date]
+    } else if (HOLIDAYS[date]) {
+      result = HOLIDAYS[date]
+    } else {
+      const d = new Date(date + 'T00:00:00')
+      const dayOfWeek = d.getDay()
+      result = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日'
+    }
+
+    dateCache.set(date, { festival: result })
+    return result
+  })
 }
 
 // ============================================================================
@@ -961,10 +1023,11 @@ function getHolidaysInRange(start, end) {
 }
 
 // ============================================================================
-// Lunar Calendar Support (农历支持)
+// Lunar Calendar Support (农历支持) - Optimized
 // ============================================================================
 
-const LUNAR_NEW_YEAR = {
+// Pre-computed lunar calendar data to avoid runtime calculations
+const LUNAR_NEW_YEAR_DATES = {
   2011: '2011-02-03',
   2012: '2012-01-23',
   2013: '2013-02-10',
@@ -983,112 +1046,107 @@ const LUNAR_NEW_YEAR = {
   2026: '2026-02-17'
 }
 
-function getDaysBetween(date1, date2) {
-  const d1 = new Date(date1 + 'T00:00:00')
-  const d2 = new Date(date2 + 'T00:00:00')
-  return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24))
+// A cache for lunar calculations to avoid repeated calculations
+const lunarCache = new Map()
+
+// Pre-computed lunar month lengths for approximate calculations
+const LUNAR_MONTH_LENGTHS = [29, 30] // Alternating between 29 and 30 days
+
+// Pre-computed lunar day names to avoid array lookups
+const LUNAR_MONTH_STRINGS = {
+  1: '正月',
+  2: '二月',
+  3: '三月',
+  4: '四月',
+  5: '五月',
+  6: '六月',
+  7: '七月',
+  8: '八月',
+  9: '九月',
+  10: '十月',
+  11: '冬月',
+  12: '腊月'
 }
 
-function getLunarYearFromSolar(solarDate) {
-  const year = parseInt(solarDate.split('-')[0])
-  for (let y = year; y >= year - 1; y--) {
-    const nyStr = LUNAR_NEW_YEAR[String(y)]
-    if (!nyStr) continue
-    const daysFromNY = getDaysBetween(solarDate, nyStr)
-    if (daysFromNY >= 0) return { lunarYear: y, daysFromNewYear: daysFromNY }
-  }
-  const nyStr = LUNAR_NEW_YEAR[String(year + 1)]
-  if (nyStr) {
-    const daysFromNY = getDaysBetween(solarDate, nyStr)
-    if (daysFromNY >= 0) return { lunarYear: year + 1, daysFromNewYear: daysFromNY }
-  }
-  return null
+const LUNAR_DAY_STRINGS = {
+  1: '初一',
+  2: '初二',
+  3: '初三',
+  4: '初四',
+  5: '初五',
+  6: '初六',
+  7: '初七',
+  8: '初八',
+  9: '初九',
+  10: '初十',
+  11: '十一',
+  12: '十二',
+  13: '十三',
+  14: '十四',
+  15: '十五',
+  16: '十六',
+  17: '十七',
+  18: '十八',
+  19: '十九',
+  20: '二十',
+  21: '廿一',
+  22: '廿二',
+  23: '廿三',
+  24: '廿四',
+  25: '廿五',
+  26: '廿六',
+  27: '廿七',
+  28: '廿八',
+  29: '廿九',
+  30: '三十'
 }
 
-function getLunarMonthAndDay(daysFromNewYear) {
-  const monthLengths = [29, 30]
-  let remaining = daysFromNewYear
-  let month = 1
-  while (remaining >= 0) {
-    const daysInMonth = monthLengths[(month - 1) % 2]
-    if (remaining < daysInMonth) return { lunarMonth: month, lunarDay: remaining + 1 }
-    remaining -= daysInMonth
-    month++
-  }
-  return { lunarMonth: 1, lunarDay: 1 }
-}
-
-function getLunarDateString(lunarMonth, lunarDay) {
-  const months = [
-    '',
-    '正月',
-    '二月',
-    '三月',
-    '四月',
-    '五月',
-    '六月',
-    '七月',
-    '八月',
-    '九月',
-    '十月',
-    '冬月',
-    '腊月'
-  ]
-  const days = [
-    '',
-    '初一',
-    '初二',
-    '初三',
-    '初四',
-    '初五',
-    '初六',
-    '初七',
-    '初八',
-    '初九',
-    '初十',
-    '十一',
-    '十二',
-    '十三',
-    '十四',
-    '十五',
-    '十六',
-    '十七',
-    '十八',
-    '十九',
-    '二十',
-    '廿一',
-    '廿二',
-    '廿三',
-    '廿四',
-    '廿五',
-    '廿六',
-    '廿七',
-    '廿八',
-    '廿九',
-    '三十'
-  ]
-  return `${months[lunarMonth] || lunarMonth + '月'}${days[lunarDay] || lunarDay}`
-}
-
-function getFestivalByLunar(month, day) {
-  const festivals = {
-    '1-1': '春节',
-    '1-15': '元宵节',
-    '5-5': '端午节',
-    '8-15': '中秋节',
-    '9-9': '重阳节',
-    '12-8': '腊八节',
-    '12-23': '小年'
-  }
-  return festivals[`${month}-${day}`] || null
+// Pre-computed lunar festivals
+const LUNAR_FESTIVALS = {
+  '1-1': '春节',
+  '1-15': '元宵节',
+  '5-5': '端午节',
+  '8-15': '中秋节',
+  '9-9': '重阳节',
+  '12-8': '腊八节',
+  '12-23': '小年'
 }
 
 function getLunarInfo(day) {
   const fd = formatDate(day)
-  const lunar = getLunarYearFromSolar(fd.date)
-  if (!lunar)
-    return {
-      date: fd.date,
+  const dateStr = fd.date
+
+  // Check lunar cache first
+  if (lunarCache.has(dateStr)) {
+    return lunarCache.get(dateStr)
+  }
+
+  // Find the lunar new year that's closest to this date
+  const year = parseInt(dateStr.split('-')[0])
+  let lunarYear = null
+  let daysFromNewYear = 0
+  let lunarNewYearDate = null
+
+  // Check current year and previous year for lunar new year
+  for (let y = year; y >= year - 1; y--) {
+    lunarNewYearDate = LUNAR_NEW_YEAR_DATES[y]
+    if (!lunarNewYearDate) continue
+
+    const newYearDate = new Date(lunarNewYearDate + 'T00:00:00')
+    const currentDate = new Date(dateStr + 'T00:00:00')
+    const timeDiff = currentDate.getTime() - newYearDate.getTime()
+    daysFromNewYear = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+
+    if (daysFromNewYear >= 0) {
+      lunarYear = y
+      break
+    }
+  }
+
+  // If we can't find a lunar year, return empty lunar info
+  if (lunarYear === null) {
+    const result = {
+      date: dateStr,
       lunarYear: null,
       lunarMonth: null,
       lunarDay: null,
@@ -1096,17 +1154,48 @@ function getLunarInfo(day) {
       lunarFestival: '',
       dayOfWeek: fd.weekends ? '周末' : '工作日'
     }
+    lunarCache.set(dateStr, result)
+    return result
+  }
 
-  const monthInfo = getLunarMonthAndDay(lunar.daysFromNewYear)
-  return {
-    date: fd.date,
-    lunarYear: lunar.lunarYear,
-    lunarMonth: monthInfo.lunarMonth,
-    lunarDay: monthInfo.lunarDay,
-    lunarString: getLunarDateString(monthInfo.lunarMonth, monthInfo.lunarDay),
-    lunarFestival: getFestivalByLunar(monthInfo.lunarMonth, monthInfo.lunarDay) || '',
+  // Calculate lunar month and day from days since lunar new year
+  let remainingDays = daysFromNewYear
+  let lunarMonth = 1
+  let lunarDay = 1
+
+  // Calculate lunar month and day by iterating through months
+  while (remainingDays >= LUNAR_MONTH_LENGTHS[(lunarMonth - 1) % 2]) {
+    remainingDays -= LUNAR_MONTH_LENGTHS[(lunarMonth - 1) % 2]
+    lunarMonth++
+    if (lunarMonth > 12) {
+      lunarMonth = 1
+      lunarYear++
+    }
+  }
+  lunarDay = remainingDays + 1
+
+  // Format lunar date string
+  const lunarMonthStr = LUNAR_MONTH_STRINGS[lunarMonth] || `${lunarMonth}月`
+  const lunarDayStr = LUNAR_DAY_STRINGS[lunarDay] || `${lunarDay}`
+  const lunarString = lunarMonthStr + lunarDayStr
+
+  // Get lunar festival if any
+  const lunarFestival = LUNAR_FESTIVALS[`${lunarMonth}-${lunarDay}`] || ''
+
+  const result = {
+    date: dateStr,
+    lunarYear,
+    lunarMonth,
+    lunarDay,
+    lunarString,
+    lunarFestival,
     dayOfWeek: fd.weekends ? '周末' : '工作日'
   }
+
+  // Cache result for future lookups
+  lunarCache.set(dateStr, result)
+
+  return result
 }
 
 // Export functions (must be at the end after all function definitions)
