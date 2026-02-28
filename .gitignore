@@ -5,8 +5,7 @@ PR_READY.md
 PULL_REQUEST_TEMPLATE.md
 *.backup
 holidays-*.js
-# Build output
-dist/
+
 # Test files
 test-*.html
 test-*.js

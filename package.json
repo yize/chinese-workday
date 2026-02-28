@@ -1,6 +1,6 @@
 {
   "name": "chinese-workday",
-  "version": "1.16.1",
+  "version": "2.0.0",
   "description": "中国工作日",
   "type": "module",
   "main": "dist/chinese-workday.cjs.js",
@@ -26,6 +26,9 @@
     "test:jest": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "rollup -c",
     "prepublishOnly": "npm run build"
   },
@@ -62,9 +65,13 @@
   "license": "MIT",
   "homepage": "https://github.com/yize/chinese-workday#readme",
   "devDependencies": {
-    "jest": "^30.2.0",
-    "rollup": "^4.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-terser": "^0.4.0"
+    "@rollup/plugin-terser": "^0.4.0",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.3.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.8.1",
+    "rollup": "^4.0.0"
   }
 }

@@ -1,3 +1,5 @@
+'use strict';
+
 /***********************************************************************
  * Chinese Workday - Performance Optimized Version
  *
@@ -16,7 +18,6 @@
  * - Cache hit rate: 98.40%
  ***********************************************************************/
 
-'use strict'
 
 // from
 // - 2011 https://www.gov.cn/zwgk/2010-12/09/content_1761783.htm
@@ -42,36 +43,36 @@
 // ============================================================================
 class LRUCache {
   constructor(maxSize = 1000) {
-    this.cache = new Map()
-    this.maxSize = maxSize
-    this.hits = 0
-    this.misses = 0
+    this.cache = new Map();
+    this.maxSize = maxSize;
+    this.hits = 0;
+    this.misses = 0;
   }
 
   get(key) {
-    const value = this.cache.get(key)
+    const value = this.cache.get(key);
     if (value !== undefined) {
-      this.hits++
+      this.hits++;
       // Move to end (most recently used)
-      this.cache.delete(key)
-      this.cache.set(key, value)
+      this.cache.delete(key);
+      this.cache.set(key, value);
       return value
     }
-    this.misses++
+    this.misses++;
     return undefined
   }
 
   set(key, value) {
     // Delete if exists (will be moved to end)
     if (this.cache.has(key)) {
-      this.cache.delete(key)
+      this.cache.delete(key);
     }
     // Add new entry
-    this.cache.set(key, value)
+    this.cache.set(key, value);
     // Remove oldest if over capacity
     if (this.cache.size > this.maxSize) {
-      const firstKey = this.cache.keys().next().value
-      this.cache.delete(firstKey)
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
     }
   }
 
@@ -87,7 +88,7 @@ class LRUCache {
 }
 
 // Singleton cache instance
-const dateCache = new LRUCache(1000)
+const dateCache = new LRUCache(1000);
 
 // ============================================================================
 // Holiday Data (2011-2026)
@@ -545,7 +546,7 @@ var HOLIDAYS = {
   '2026-10-05': '国庆节',
   '2026-10-06': '国庆节',
   '2026-10-07': '国庆节'
-}
+};
 
 // ============================================================================
 // Additional Workdays (周末调休)
@@ -645,7 +646,7 @@ var WEEKENDS_WORKDAY = {
   '2026-05-09': '补劳动节',
   '2026-09-20': '补国庆节',
   '2026-10-10': '补国庆节'
-}
+};
 
 // ============================================================================
 // Highly Optimized Date Formatting
@@ -653,10 +654,10 @@ var WEEKENDS_WORKDAY = {
 function formatDate(day) {
   // Handle undefined (today)
   if (day === undefined) {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = today.getMonth() + 1
-    const date = today.getDate()
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
     return {
       date: `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`,
       weekends: false // Assume workday if undefined
@@ -665,11 +666,11 @@ function formatDate(day) {
 
   // Handle Date object directly
   if (day instanceof Date) {
-    const year = day.getFullYear()
-    const month = day.getMonth() + 1
-    const date = day.getDate()
-    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`
-    const dayOfWeek = day.getDay()
+    const year = day.getFullYear();
+    const month = day.getMonth() + 1;
+    const date = day.getDate();
+    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`;
+    const dayOfWeek = day.getDay();
 
     return {
       date: dateStr,
@@ -679,12 +680,12 @@ function formatDate(day) {
 
   // Handle timestamp (number)
   if (typeof day === 'number') {
-    const dateObj = new Date(day)
-    const year = dateObj.getFullYear()
-    const month = dateObj.getMonth() + 1
-    const date = dateObj.getDate()
-    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`
-    const dayOfWeek = dateObj.getDay()
+    const dateObj = new Date(day);
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+    const dateStr = `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`;
+    const dayOfWeek = dateObj.getDay();
 
     return {
       date: dateStr,
@@ -695,17 +696,17 @@ function formatDate(day) {
   // Handle string input (support both - and / formats)
   // Check if it's a slash format (YYYY/MM/DD)
   if (day.includes('/')) {
-    const parts = day.split('/')
+    const parts = day.split('/');
     if (parts.length === 3) {
-      const year = parseInt(parts[0])
-      const month = parseInt(parts[1]) - 1
-      const date = parseInt(parts[2])
-      const dateObj = new Date(year, month, date)
-      const formattedYear = dateObj.getFullYear()
-      const formattedMonth = dateObj.getMonth() + 1
-      const formattedDate = dateObj.getDate()
-      const formattedDateStr = `${formattedYear}-${formattedMonth < 10 ? '0' : ''}${formattedMonth}-${formattedDate < 10 ? '0' : ''}${formattedDate}`
-      const dayOfWeek = dateObj.getDay()
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const date = parseInt(parts[2]);
+      const dateObj = new Date(year, month, date);
+      const formattedYear = dateObj.getFullYear();
+      const formattedMonth = dateObj.getMonth() + 1;
+      const formattedDate = dateObj.getDate();
+      const formattedDateStr = `${formattedYear}-${formattedMonth < 10 ? '0' : ''}${formattedMonth}-${formattedDate < 10 ? '0' : ''}${formattedDate}`;
+      const dayOfWeek = dateObj.getDay();
 
       return {
         date: formattedDateStr,
@@ -715,16 +716,16 @@ function formatDate(day) {
   }
 
   // Standard format (YYYY-MM-DD)
-  const d = new Date(day)
+  const d = new Date(day);
 
   if (isNaN(d.getTime())) {
     throw new Error(`Invalid date: ${day}`)
   }
 
-  const year = d.getFullYear()
-  const month = d.getMonth() + 1
-  const date = d.getDate()
-  const dayOfWeek = d.getDay()
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const date = d.getDate();
+  const dayOfWeek = d.getDay();
 
   return {
     date: `${year}-${month < 10 ? '0' : ''}${month}-${date < 10 ? '0' : ''}${date}`,
@@ -736,57 +737,57 @@ function formatDate(day) {
 // Query Functions
 // ============================================================================
 function isWorkday(day) {
-  let dateKey
+  let dateKey;
 
   // Fast path for string in YYYY-MM-DD format (avoid formatDate overhead)
   if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
-    dateKey = day
+    dateKey = day;
 
     // Direct cache lookup
-    const cached = dateCache.get(dateKey)
+    const cached = dateCache.get(dateKey);
     if (cached && cached.isWorkday !== undefined) {
       return cached.isWorkday
     }
 
     // Quick lookup in data structures
     if (WEEKENDS_WORKDAY[dateKey]) {
-      dateCache.set(dateKey, { isWorkday: true })
+      dateCache.set(dateKey, { isWorkday: true });
       return true
     }
     if (HOLIDAYS[dateKey]) {
-      dateCache.set(dateKey, { isWorkday: false })
+      dateCache.set(dateKey, { isWorkday: false });
       return false
     }
 
     // Determine weekend
-    const d = new Date(dateKey + 'T00:00:00')
-    const dayOfWeek = d.getDay()
-    const isWeek = dayOfWeek === 0 || dayOfWeek === 6
-    const result = !isWeek
-    dateCache.set(dateKey, { isWorkday: result })
+    const d = new Date(dateKey + 'T00:00:00');
+    const dayOfWeek = d.getDay();
+    const isWeek = dayOfWeek === 0 || dayOfWeek === 6;
+    const result = !isWeek;
+    dateCache.set(dateKey, { isWorkday: result });
     return result
   }
 
   // General path (Date, number, other strings)
-  const fd = formatDate(day)
-  dateKey = fd.date
+  const fd = formatDate(day);
+  dateKey = fd.date;
 
   // Check cache
-  const cached = dateCache.get(dateKey)
+  const cached = dateCache.get(dateKey);
   if (cached && cached.isWorkday !== undefined) {
     return cached.isWorkday
   }
 
-  let result
+  let result;
   if (WEEKENDS_WORKDAY[dateKey]) {
-    result = true
+    result = true;
   } else if (HOLIDAYS[dateKey]) {
-    result = false
+    result = false;
   } else {
-    result = !fd.weekends
+    result = !fd.weekends;
   }
 
-  dateCache.set(dateKey, { isWorkday: result })
+  dateCache.set(dateKey, { isWorkday: result });
   return result
 }
 
@@ -795,14 +796,14 @@ function isHoliday(day) {
 }
 
 function isAdditionalWorkday(day) {
-  const fd = formatDate(day)
+  const fd = formatDate(day);
   return !!WEEKENDS_WORKDAY[fd.date]
 }
 
 function isAddtionalWorkday(day) {
   console.warn(
     'DEPRECATED: isAddtionalWorkday is deprecated. Please use isAdditionalWorkday instead.'
-  )
+  );
   return isAdditionalWorkday(day)
 }
 
@@ -810,50 +811,50 @@ function getFestival(day) {
   // Fast path for standard YYYY-MM-DD string
   if (typeof day === 'string' && day.length === 10 && day[4] === '-' && day[7] === '-') {
     // Check cache
-    let cached = dateCache.get(day)
+    let cached = dateCache.get(day);
     if (cached && cached.festival) {
       return cached.festival
     }
 
     // Direct lookup
-    let result = WEEKENDS_WORKDAY[day]
+    let result = WEEKENDS_WORKDAY[day];
     if (result) {
-      dateCache.set(day, { festival: result })
+      dateCache.set(day, { festival: result });
       return result
     }
-    const holiday = HOLIDAYS[day]
+    const holiday = HOLIDAYS[day];
     if (holiday) {
-      dateCache.set(day, { festival: holiday })
+      dateCache.set(day, { festival: holiday });
       return holiday
     }
 
     // Not holiday: compute weekend
-    const dateObj = new Date(day + 'T00:00:00')
-    const dayOfWeek = dateObj.getDay()
-    const festival = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日'
-    dateCache.set(day, { festival })
+    const dateObj = new Date(day + 'T00:00:00');
+    const dayOfWeek = dateObj.getDay();
+    const festival = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日';
+    dateCache.set(day, { festival });
     return festival
   }
 
   // General path
-  const fd = formatDate(day)
+  const fd = formatDate(day);
 
   // Check cache
-  const cached = dateCache.get(fd.date)
+  const cached = dateCache.get(fd.date);
   if (cached && cached.festival) {
     return cached.festival
   }
 
-  let result
+  let result;
   if (WEEKENDS_WORKDAY[fd.date]) {
-    result = WEEKENDS_WORKDAY[fd.date]
+    result = WEEKENDS_WORKDAY[fd.date];
   } else if (HOLIDAYS[fd.date]) {
-    result = HOLIDAYS[fd.date]
+    result = HOLIDAYS[fd.date];
   } else {
-    result = fd.weekends ? '周末' : '工作日'
+    result = fd.weekends ? '周末' : '工作日';
   }
 
-  dateCache.set(fd.date, { festival: result })
+  dateCache.set(fd.date, { festival: result });
   return result
 }
 
@@ -867,29 +868,29 @@ function isWorkdayBatch(days) {
       return day
     }
     return formatDate(day).date
-  })
+  });
 
   // Process each formatted date and cache results
   return dates.map((date) => {
     // Check cache first
-    const cached = dateCache.get(date)
+    const cached = dateCache.get(date);
     if (cached && cached.isWorkday !== undefined) {
       return cached.isWorkday
     }
 
     // Direct lookup
-    let result
+    let result;
     if (WEEKENDS_WORKDAY[date]) {
-      result = true
+      result = true;
     } else if (HOLIDAYS[date]) {
-      result = false
+      result = false;
     } else {
-      const d = new Date(date + 'T00:00:00')
-      const dayOfWeek = d.getDay()
-      result = !(dayOfWeek === 0 || dayOfWeek === 6)
+      const d = new Date(date + 'T00:00:00');
+      const dayOfWeek = d.getDay();
+      result = !(dayOfWeek === 0 || dayOfWeek === 6);
     }
 
-    dateCache.set(date, { isWorkday: result })
+    dateCache.set(date, { isWorkday: result });
     return result
   })
 }
@@ -905,29 +906,29 @@ function getFestivalBatch(days) {
       return day
     }
     return formatDate(day).date
-  })
+  });
 
   // Process each formatted date and cache results
   return dates.map((date) => {
     // Check cache first
-    const cached = dateCache.get(date)
+    const cached = dateCache.get(date);
     if (cached && cached.festival) {
       return cached.festival
     }
 
     // Direct lookup
-    let result
+    let result;
     if (WEEKENDS_WORKDAY[date]) {
-      result = WEEKENDS_WORKDAY[date]
+      result = WEEKENDS_WORKDAY[date];
     } else if (HOLIDAYS[date]) {
-      result = HOLIDAYS[date]
+      result = HOLIDAYS[date];
     } else {
-      const d = new Date(date + 'T00:00:00')
-      const dayOfWeek = d.getDay()
-      result = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日'
+      const d = new Date(date + 'T00:00:00');
+      const dayOfWeek = d.getDay();
+      result = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日';
     }
 
-    dateCache.set(date, { festival: result })
+    dateCache.set(date, { festival: result });
     return result
   })
 }
@@ -939,32 +940,32 @@ function getCacheStats() {
 }
 
 function clearCache() {
-  dateCache.cache.clear()
-  dateCache.hits = 0
-  dateCache.misses = 0
+  dateCache.cache.clear();
+  dateCache.hits = 0;
+  dateCache.misses = 0;
 }
 
 // ============================================================================
 // Additional Helper Functions
 // ============================================================================
 function isWeekend(day) {
-  const fd = formatDate(day)
+  const fd = formatDate(day);
   return fd.weekends
 }
 
 function addDays(dayStr, days) {
-  const d = new Date(dayStr + 'T00:00:00')
-  d.setDate(d.getDate() + days)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const date = String(d.getDate()).padStart(2, '0')
+  const d = new Date(dayStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${date}`
 }
 
 function nextWorkday(day) {
-  let current = formatDate(day).date
+  let current = formatDate(day).date;
   for (let i = 1; i <= 7; i++) {
-    const next = addDays(current, i)
+    const next = addDays(current, i);
     if (isWorkday(next)) {
       return next
     }
@@ -973,10 +974,10 @@ function nextWorkday(day) {
 }
 
 function previousWorkday(day) {
-  let current = formatDate(day).date
+  let current = formatDate(day).date;
   // Look back up to 14 days to handle long holidays
   for (let i = 1; i <= 14; i++) {
-    const prev = addDays(current, -i)
+    const prev = addDays(current, -i);
     if (isWorkday(prev)) {
       return prev
     }
@@ -985,46 +986,46 @@ function previousWorkday(day) {
 }
 
 function countWorkdays(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
   if (startDate > endDate) return 0
 
-  let count = 0
-  let current = startDate
+  let count = 0;
+  let current = startDate;
   while (current <= endDate) {
-    if (isWorkday(current)) count++
-    current = addDays(current, 1)
+    if (isWorkday(current)) count++;
+    current = addDays(current, 1);
   }
   return count
 }
 
 function getWorkdaysInRange(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
   if (startDate > endDate) return []
 
-  const result = []
-  let current = startDate
+  const result = [];
+  let current = startDate;
   while (current <= endDate) {
-    if (isWorkday(current)) result.push(current)
-    current = addDays(current, 1)
+    if (isWorkday(current)) result.push(current);
+    current = addDays(current, 1);
   }
   return result
 }
 
 function getHolidaysInRange(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
   if (startDate > endDate) return []
 
-  const result = []
-  let current = startDate
+  const result = [];
+  let current = startDate;
   while (current <= endDate) {
-    const festival = getFestival(current)
+    const festival = getFestival(current);
     if (festival !== '工作日' && festival !== '周末') {
-      result.push({ date: current, festival })
+      result.push({ date: current, festival });
     }
-    current = addDays(current, 1)
+    current = addDays(current, 1);
   }
   return result
 }
@@ -1051,13 +1052,13 @@ const LUNAR_NEW_YEAR_DATES = {
   2024: '2024-02-10',
   2025: '2025-01-29',
   2026: '2026-02-17'
-}
+};
 
 // A cache for lunar calculations to avoid repeated calculations
-const lunarCache = new Map()
+const lunarCache = new Map();
 
 // Pre-computed lunar month lengths for approximate calculations
-const LUNAR_MONTH_LENGTHS = [29, 30] // Alternating between 29 and 30 days
+const LUNAR_MONTH_LENGTHS = [29, 30]; // Alternating between 29 and 30 days
 
 // Pre-computed lunar day names to avoid array lookups
 const LUNAR_MONTH_STRINGS = {
@@ -1073,7 +1074,7 @@ const LUNAR_MONTH_STRINGS = {
   10: '十月',
   11: '冬月',
   12: '腊月'
-}
+};
 
 const LUNAR_DAY_STRINGS = {
   1: '初一',
@@ -1106,7 +1107,7 @@ const LUNAR_DAY_STRINGS = {
   28: '廿八',
   29: '廿九',
   30: '三十'
-}
+};
 
 // Pre-computed lunar festivals
 const LUNAR_FESTIVALS = {
@@ -1117,11 +1118,11 @@ const LUNAR_FESTIVALS = {
   '9-9': '重阳节',
   '12-8': '腊八节',
   '12-23': '小年'
-}
+};
 
 function getLunarInfo(day) {
-  const fd = formatDate(day)
-  const dateStr = fd.date
+  const fd = formatDate(day);
+  const dateStr = fd.date;
 
   // Check lunar cache first
   if (lunarCache.has(dateStr)) {
@@ -1129,23 +1130,23 @@ function getLunarInfo(day) {
   }
 
   // Find the lunar new year that's closest to this date
-  const year = parseInt(dateStr.split('-')[0])
-  let lunarYear = null
-  let daysFromNewYear = 0
-  let lunarNewYearDate = null
+  const year = parseInt(dateStr.split('-')[0]);
+  let lunarYear = null;
+  let daysFromNewYear = 0;
+  let lunarNewYearDate = null;
 
   // Check current year and previous year for lunar new year
   for (let y = year; y >= year - 1; y--) {
-    lunarNewYearDate = LUNAR_NEW_YEAR_DATES[y]
+    lunarNewYearDate = LUNAR_NEW_YEAR_DATES[y];
     if (!lunarNewYearDate) continue
 
-    const newYearDate = new Date(lunarNewYearDate + 'T00:00:00')
-    const currentDate = new Date(dateStr + 'T00:00:00')
-    const timeDiff = currentDate.getTime() - newYearDate.getTime()
-    daysFromNewYear = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+    const newYearDate = new Date(lunarNewYearDate + 'T00:00:00');
+    const currentDate = new Date(dateStr + 'T00:00:00');
+    const timeDiff = currentDate.getTime() - newYearDate.getTime();
+    daysFromNewYear = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
     if (daysFromNewYear >= 0) {
-      lunarYear = y
+      lunarYear = y;
       break
     }
   }
@@ -1160,34 +1161,34 @@ function getLunarInfo(day) {
       lunarString: '',
       lunarFestival: '',
       dayOfWeek: fd.weekends ? '周末' : '工作日'
-    }
-    lunarCache.set(dateStr, result)
+    };
+    lunarCache.set(dateStr, result);
     return result
   }
 
   // Calculate lunar month and day from days since lunar new year
-  let remainingDays = daysFromNewYear
-  let lunarMonth = 1
-  let lunarDay = 1
+  let remainingDays = daysFromNewYear;
+  let lunarMonth = 1;
+  let lunarDay = 1;
 
   // Calculate lunar month and day by iterating through months
   while (remainingDays >= LUNAR_MONTH_LENGTHS[(lunarMonth - 1) % 2]) {
-    remainingDays -= LUNAR_MONTH_LENGTHS[(lunarMonth - 1) % 2]
-    lunarMonth++
+    remainingDays -= LUNAR_MONTH_LENGTHS[(lunarMonth - 1) % 2];
+    lunarMonth++;
     if (lunarMonth > 12) {
-      lunarMonth = 1
-      lunarYear++
+      lunarMonth = 1;
+      lunarYear++;
     }
   }
-  lunarDay = remainingDays + 1
+  lunarDay = remainingDays + 1;
 
   // Format lunar date string
-  const lunarMonthStr = LUNAR_MONTH_STRINGS[lunarMonth] || `${lunarMonth}月`
-  const lunarDayStr = LUNAR_DAY_STRINGS[lunarDay] || `${lunarDay}`
-  const lunarString = lunarMonthStr + lunarDayStr
+  const lunarMonthStr = LUNAR_MONTH_STRINGS[lunarMonth] || `${lunarMonth}月`;
+  const lunarDayStr = LUNAR_DAY_STRINGS[lunarDay] || `${lunarDay}`;
+  const lunarString = lunarMonthStr + lunarDayStr;
 
   // Get lunar festival if any
-  const lunarFestival = LUNAR_FESTIVALS[`${lunarMonth}-${lunarDay}`] || ''
+  const lunarFestival = LUNAR_FESTIVALS[`${lunarMonth}-${lunarDay}`] || '';
 
   const result = {
     date: dateStr,
@@ -1197,10 +1198,10 @@ function getLunarInfo(day) {
     lunarString,
     lunarFestival,
     dayOfWeek: fd.weekends ? '周末' : '工作日'
-  }
+  };
 
   // Cache result for future lookups
-  lunarCache.set(dateStr, result)
+  lunarCache.set(dateStr, result);
 
   return result
 }
@@ -1216,31 +1217,31 @@ function getLunarInfo(day) {
  * @returns {number} Number of workdays between the dates (excluding start date)
  */
 function getWorkdaysInterval(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
 
   if (startDate === endDate) return 0
 
   // Determine direction
-  const startObj = new Date(startDate + 'T00:00:00')
-  const endObj = new Date(endDate + 'T00:00:00')
+  const startObj = new Date(startDate + 'T00:00:00');
+  const endObj = new Date(endDate + 'T00:00:00');
 
   if (startObj > endObj) {
     // Going backwards
-    let count = 0
-    let current = previousWorkday(startDate)
+    let count = 0;
+    let current = previousWorkday(startDate);
     while (current && current >= endDate) {
-      count++
-      current = previousWorkday(current)
+      count++;
+      current = previousWorkday(current);
     }
     return count
   } else {
     // Going forward
-    let count = 0
-    let current = nextWorkday(startDate)
+    let count = 0;
+    let current = nextWorkday(startDate);
     while (current && current <= endDate) {
-      count++
-      current = nextWorkday(current)
+      count++;
+      current = nextWorkday(current);
     }
     return count
   }
@@ -1253,29 +1254,29 @@ function getWorkdaysInterval(start, end) {
  * @returns {string|null} The resulting workday date or null if not found within reasonable range
  */
 function addWorkdays(day, n) {
-  const startDate = formatDate(day).date
+  const startDate = formatDate(day).date;
 
   // If n is 0, return the same date if it's a workday, otherwise next workday
   if (n === 0) {
     return isWorkday(startDate) ? startDate : nextWorkday(startDate)
   }
 
-  let current = startDate
-  let remaining = Math.abs(n)
+  let current = startDate;
+  let remaining = Math.abs(n);
 
   if (n > 0) {
     // Adding workdays
     while (remaining > 0) {
-      current = nextWorkday(current)
+      current = nextWorkday(current);
       if (!current) return null // Could not find next workday within reasonable range
-      remaining--
+      remaining--;
     }
   } else {
     // Subtracting workdays
     while (remaining > 0) {
-      current = previousWorkday(current)
+      current = previousWorkday(current);
       if (!current) return null // Could not find previous workday within reasonable range
-      remaining--
+      remaining--;
     }
   }
 
@@ -1290,18 +1291,18 @@ function addWorkdays(day, n) {
  * @returns {string[]} Array of workday dates
  */
 function getWorkdaySequence(start, end, interval = 1) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
   if (startDate > endDate) return []
 
-  const result = []
-  let current = isWorkday(startDate) ? startDate : nextWorkday(startDate)
+  const result = [];
+  let current = isWorkday(startDate) ? startDate : nextWorkday(startDate);
 
   while (current && current <= endDate) {
-    result.push(current)
+    result.push(current);
 
     // Add interval workdays to current to get next date in sequence
-    current = addWorkdays(current, interval)
+    current = addWorkdays(current, interval);
     if (!current || current > endDate) break
   }
 
@@ -1318,44 +1319,44 @@ function getAnnualStats(year) {
     throw new Error('Year must be between 2011 and 2026')
   }
 
-  const yearStr = String(year)
-  const startDate = `${yearStr}-01-01`
-  const endDate = `${yearStr}-12-31`
+  const yearStr = String(year);
+  const startDate = `${yearStr}-01-01`;
+  const endDate = `${yearStr}-12-31`;
 
-  let totalDays = 0
-  let workdays = 0
-  let holidays = 0
-  let weekends = 0
-  let additionalWorkdays = 0
-  let festivalCounts = {}
+  let totalDays = 0;
+  let workdays = 0;
+  let holidays = 0;
+  let weekends = 0;
+  let additionalWorkdays = 0;
+  let festivalCounts = {};
 
-  let current = startDate
+  let current = startDate;
   while (current <= endDate) {
-    totalDays++
+    totalDays++;
 
     if (isWorkday(current)) {
-      workdays++
+      workdays++;
       if (isAddtionalWorkday(current)) {
-        additionalWorkdays++
+        additionalWorkdays++;
       }
     } else {
       // Count as either holiday or weekend
       if (HOLIDAYS[current]) {
-        holidays++
-        const festival = HOLIDAYS[current]
-        festivalCounts[festival] = (festivalCounts[festival] || 0) + 1
+        holidays++;
+        const festival = HOLIDAYS[current];
+        festivalCounts[festival] = (festivalCounts[festival] || 0) + 1;
       } else {
-        weekends++
+        weekends++;
       }
     }
 
     // Move to next day
-    const dateObj = new Date(current + 'T00:00:00')
-    dateObj.setDate(dateObj.getDate() + 1)
-    const nextYear = dateObj.getFullYear()
-    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const nextDate = String(dateObj.getDate()).padStart(2, '0')
-    current = `${nextYear}-${nextMonth}-${nextDate}`
+    const dateObj = new Date(current + 'T00:00:00');
+    dateObj.setDate(dateObj.getDate() + 1);
+    const nextYear = dateObj.getFullYear();
+    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const nextDate = String(dateObj.getDate()).padStart(2, '0');
+    current = `${nextYear}-${nextMonth}-${nextDate}`;
   }
 
   return {
@@ -1380,17 +1381,17 @@ function getAnnualStats(year) {
  * @returns {Object|null} Object containing holiday date and festival name, or null if not found
  */
 function getNextHoliday(day) {
-  const startDate = formatDate(day).date
-  let current = startDate
-  const dateObj = new Date(current + 'T00:00:00')
+  const startDate = formatDate(day).date;
+  let current = startDate;
+  const dateObj = new Date(current + 'T00:00:00');
 
   // Look ahead up to 365 days
   for (let i = 0; i < 365; i++) {
-    dateObj.setDate(dateObj.getDate() + 1)
-    const year = dateObj.getFullYear()
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const date = String(dateObj.getDate()).padStart(2, '0')
-    current = `${year}-${month}-${date}`
+    dateObj.setDate(dateObj.getDate() + 1);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const date = String(dateObj.getDate()).padStart(2, '0');
+    current = `${year}-${month}-${date}`;
 
     if (HOLIDAYS[current]) {
       return {
@@ -1410,7 +1411,7 @@ function getNextHoliday(day) {
  * @returns {number} Days until next holiday, or -1 if not found within a year
  */
 function daysUntilHoliday(day) {
-  const nextHoliday = getNextHoliday(day)
+  const nextHoliday = getNextHoliday(day);
   return nextHoliday ? nextHoliday.daysUntil : -1
 }
 
@@ -1421,16 +1422,16 @@ function daysUntilHoliday(day) {
  * @returns {boolean} True if approaching a holiday
  */
 function isHolidayApproaching(day, daysBefore = 1) {
-  const startDate = formatDate(day).date
-  const dateObj = new Date(startDate + 'T00:00:00')
+  const startDate = formatDate(day).date;
+  const dateObj = new Date(startDate + 'T00:00:00');
 
   // Check next `daysBefore` days for holidays
   for (let i = 1; i <= daysBefore; i++) {
-    dateObj.setDate(dateObj.getDate() + 1)
-    const year = dateObj.getFullYear()
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const date = String(dateObj.getDate()).padStart(2, '0')
-    const futureDate = `${year}-${month}-${date}`
+    dateObj.setDate(dateObj.getDate() + 1);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const date = String(dateObj.getDate()).padStart(2, '0');
+    const futureDate = `${year}-${month}-${date}`;
 
     if (HOLIDAYS[futureDate]) {
       return true
@@ -1446,28 +1447,28 @@ function isHolidayApproaching(day, daysBefore = 1) {
  * @returns {number} Number of consecutive holidays starting from the date, or 0 if not a holiday
  */
 function getConsecutiveHolidays(day) {
-  const startDate = formatDate(day).date
+  const startDate = formatDate(day).date;
 
   // If the start date is not a holiday, return 0
   if (!HOLIDAYS[startDate]) {
     return 0
   }
 
-  let count = 1 // Start with 1 because the start date is a holiday
-  let current = startDate
-  const dateObj = new Date(current + 'T00:00:00')
+  let count = 1; // Start with 1 because the start date is a holiday
+  let current = startDate;
+  const dateObj = new Date(current + 'T00:00:00');
 
   // Look forward for consecutive holidays
   while (true) {
-    dateObj.setDate(dateObj.getDate() + 1)
-    const year = dateObj.getFullYear()
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const date = String(dateObj.getDate()).padStart(2, '0')
-    current = `${year}-${month}-${date}`
+    dateObj.setDate(dateObj.getDate() + 1);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const date = String(dateObj.getDate()).padStart(2, '0');
+    current = `${year}-${month}-${date}`;
 
     // Check if it's a holiday or weekend that's part of the holiday period
     if (HOLIDAYS[current] || (!isWorkday(current) && !isAddtionalWorkday(current))) {
-      count++
+      count++;
     } else {
       break
     }
@@ -1481,7 +1482,7 @@ function getConsecutiveHolidays(day) {
 // ============================================================================
 
 // Store custom work schedules
-let customSchedules = {}
+let customSchedules = {};
 
 /**
  * Set a custom workday schedule
@@ -1496,9 +1497,9 @@ function setWorkSchedule(scheduleId, schedule) {
     workdays: [1, 2, 3, 4, 5], // Monday to Friday
     holidays: [],
     workdaysOnWeekends: []
-  }
+  };
 
-  customSchedules[scheduleId] = { ...defaultSchedule, ...schedule }
+  customSchedules[scheduleId] = { ...defaultSchedule, ...schedule };
 }
 
 /**
@@ -1517,40 +1518,40 @@ function getWorkSchedule(scheduleId) {
  * @returns {boolean} True if it's a workday according to the schedule
  */
 function isWorkdayCustom(day, scheduleId = 'default') {
-  const schedule = customSchedules[scheduleId]
+  const schedule = customSchedules[scheduleId];
   if (!schedule) {
     // If no custom schedule found, fall back to default behavior
     return isWorkday(day)
   }
 
-  const fd = formatDate(day)
-  const dateStr = fd.date
+  const fd = formatDate(day);
+  const dateStr = fd.date;
 
   // Check cache first
-  const cacheKey = `custom_${scheduleId}_${dateStr}`
-  const cached = dateCache.get(cacheKey)
+  const cacheKey = `custom_${scheduleId}_${dateStr}`;
+  const cached = dateCache.get(cacheKey);
   if (cached && cached.isWorkday !== undefined) {
     return cached.isWorkday
   }
 
   // Check if it's explicitly defined as a workday on weekend
   if (schedule.workdaysOnWeekends.includes(dateStr)) {
-    dateCache.set(cacheKey, { isWorkday: true })
+    dateCache.set(cacheKey, { isWorkday: true });
     return true
   }
 
   // Check if it's explicitly defined as a holiday
   if (schedule.holidays.includes(dateStr)) {
-    dateCache.set(cacheKey, { isWorkday: false })
+    dateCache.set(cacheKey, { isWorkday: false });
     return false
   }
 
   // Determine based on day of week according to the custom schedule
-  const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay()
-  const isCustomWorkday = schedule.workdays.includes(dayOfWeek)
+  const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay();
+  const isCustomWorkday = schedule.workdays.includes(dayOfWeek);
 
-  const result = isCustomWorkday
-  dateCache.set(cacheKey, { isWorkday: result })
+  const result = isCustomWorkday;
+  dateCache.set(cacheKey, { isWorkday: result });
   return result
 }
 
@@ -1569,7 +1570,7 @@ function isHolidayCustom(day, scheduleId = 'default') {
  * @param {string} scheduleId ID of the schedule to remove
  */
 function clearWorkSchedule(scheduleId) {
-  delete customSchedules[scheduleId]
+  delete customSchedules[scheduleId];
 }
 
 /**
@@ -1598,44 +1599,44 @@ function getMonthlyStats(year, month) {
     throw new Error('Month must be between 1 and 12')
   }
 
-  const monthStr = String(year) + '-' + String(month).padStart(2, '0')
-  const startDate = monthStr + '-01'
+  const monthStr = String(year) + '-' + String(month).padStart(2, '0');
+  const startDate = monthStr + '-01';
 
   // Calculate the last day of the month
-  const dateObj = new Date(year, month, 0) // Month is 0-indexed in Date constructor, so use 'month' to get last day of 'month-1'
-  const daysInMonth = dateObj.getDate()
-  const endDate = monthStr + '-' + String(daysInMonth).padStart(2, '0')
+  const dateObj = new Date(year, month, 0); // Month is 0-indexed in Date constructor, so use 'month' to get last day of 'month-1'
+  const daysInMonth = dateObj.getDate();
+  const endDate = monthStr + '-' + String(daysInMonth).padStart(2, '0');
 
-  let totalDays = 0
-  let workdays = 0
-  let holidays = 0
-  let weekends = 0
-  let additionalWorkdays = 0
+  let totalDays = 0;
+  let workdays = 0;
+  let holidays = 0;
+  let weekends = 0;
+  let additionalWorkdays = 0;
 
-  let current = startDate
+  let current = startDate;
   while (current <= endDate) {
-    totalDays++
+    totalDays++;
 
     if (isWorkday(current)) {
-      workdays++
+      workdays++;
       if (isAddtionalWorkday(current)) {
-        additionalWorkdays++
+        additionalWorkdays++;
       }
     } else {
       if (HOLIDAYS[current]) {
-        holidays++
+        holidays++;
       } else {
-        weekends++
+        weekends++;
       }
     }
 
     // Move to next day
-    const dateObj = new Date(current + 'T00:00:00')
-    dateObj.setDate(dateObj.getDate() + 1)
-    const nextYear = dateObj.getFullYear()
-    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const nextDate = String(dateObj.getDate()).padStart(2, '0')
-    current = `${nextYear}-${nextMonth}-${nextDate}`
+    const dateObj = new Date(current + 'T00:00:00');
+    dateObj.setDate(dateObj.getDate() + 1);
+    const nextYear = dateObj.getFullYear();
+    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const nextDate = String(dateObj.getDate()).padStart(2, '0');
+    current = `${nextYear}-${nextMonth}-${nextDate}`;
   }
 
   return {
@@ -1657,42 +1658,42 @@ function getMonthlyStats(year, month) {
  * @returns {Object} Object containing workday statistics for the range
  */
 function getWorkdayRatio(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
   if (startDate > endDate) {
     throw new Error('Start date must be before end date')
   }
 
-  let totalDays = 0
-  let workdays = 0
-  let holidays = 0
-  let weekends = 0
-  let additionalWorkdays = 0
+  let totalDays = 0;
+  let workdays = 0;
+  let holidays = 0;
+  let weekends = 0;
+  let additionalWorkdays = 0;
 
-  let current = startDate
+  let current = startDate;
   while (current <= endDate) {
-    totalDays++
+    totalDays++;
 
     if (isWorkday(current)) {
-      workdays++
+      workdays++;
       if (isAddtionalWorkday(current)) {
-        additionalWorkdays++
+        additionalWorkdays++;
       }
     } else {
       if (HOLIDAYS[current]) {
-        holidays++
+        holidays++;
       } else {
-        weekends++
+        weekends++;
       }
     }
 
     // Move to next day
-    const dateObj = new Date(current + 'T00:00:00')
-    dateObj.setDate(dateObj.getDate() + 1)
-    const nextYear = dateObj.getFullYear()
-    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const nextDate = String(dateObj.getDate()).padStart(2, '0')
-    current = `${nextYear}-${nextMonth}-${nextDate}`
+    const dateObj = new Date(current + 'T00:00:00');
+    dateObj.setDate(dateObj.getDate() + 1);
+    const nextYear = dateObj.getFullYear();
+    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const nextDate = String(dateObj.getDate()).padStart(2, '0');
+    current = `${nextYear}-${nextMonth}-${nextDate}`;
   }
 
   return {
@@ -1716,18 +1717,18 @@ function getWorkdayRatio(start, end) {
  * @returns {Object|null} Object containing the most common holiday and its count
  */
 function getMostCommonHoliday(year) {
-  const stats = getAnnualStats(year)
+  const stats = getAnnualStats(year);
   if (!stats || !stats.holidayDistribution) {
     return null
   }
 
-  let mostCommon = null
-  let maxCount = 0
+  let mostCommon = null;
+  let maxCount = 0;
 
   for (const [festival, count] of Object.entries(stats.holidayDistribution)) {
     if (count > maxCount) {
-      maxCount = count
-      mostCommon = { festival, count }
+      maxCount = count;
+      mostCommon = { festival, count };
     }
   }
 
@@ -1741,31 +1742,31 @@ function getMostCommonHoliday(year) {
  * @returns {Object} Object with festival names as keys and arrays of dates as values
  */
 function getHolidaysByFestival(start, end) {
-  const startFormatted = formatDate(start).date
-  const endFormatted = formatDate(end).date
+  const startFormatted = formatDate(start).date;
+  const endFormatted = formatDate(end).date;
   if (startFormatted > endFormatted) {
     throw new Error('Start date must be before end date')
   }
 
-  const festivalMap = {}
+  const festivalMap = {};
 
-  let current = startFormatted
+  let current = startFormatted;
   while (current <= endFormatted) {
-    const festival = HOLIDAYS[current]
+    const festival = HOLIDAYS[current];
     if (festival) {
       if (!festivalMap[festival]) {
-        festivalMap[festival] = []
+        festivalMap[festival] = [];
       }
-      festivalMap[festival].push(current)
+      festivalMap[festival].push(current);
     }
 
     // Move to next day
-    const dateObj = new Date(current + 'T00:00:00')
-    dateObj.setDate(dateObj.getDate() + 1)
-    const nextYear = dateObj.getFullYear()
-    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const nextDate = String(dateObj.getDate()).padStart(2, '0')
-    current = `${nextYear}-${nextMonth}-${nextDate}`
+    const dateObj = new Date(current + 'T00:00:00');
+    dateObj.setDate(dateObj.getDate() + 1);
+    const nextYear = dateObj.getFullYear();
+    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const nextDate = String(dateObj.getDate()).padStart(2, '0');
+    current = `${nextYear}-${nextMonth}-${nextDate}`;
   }
 
   return festivalMap
@@ -1782,13 +1783,13 @@ function getHolidaysByFestival(start, end) {
  * @returns {number} Total number of days between the dates (inclusive)
  */
 function getTotalDays(start, end) {
-  const startDate = formatDate(start).date
-  const endDate = formatDate(end).date
+  const startDate = formatDate(start).date;
+  const endDate = formatDate(end).date;
 
-  const startObj = new Date(startDate + 'T00:00:00')
-  const endObj = new Date(endDate + 'T00:00:00')
+  const startObj = new Date(startDate + 'T00:00:00');
+  const endObj = new Date(endDate + 'T00:00:00');
 
-  const timeDiff = endObj.getTime() - startObj.getTime()
+  const timeDiff = endObj.getTime() - startObj.getTime();
   return Math.abs(Math.floor(timeDiff / (1000 * 60 * 60 * 24))) + 1 // +1 to make it inclusive
 }
 
@@ -1800,7 +1801,7 @@ function getTotalDays(start, end) {
  * @returns {number} Total work hours between the dates
  */
 function calculateWorkHours(start, end, hoursPerDay = 8) {
-  const workdays = countWorkdays(start, end)
+  const workdays = countWorkdays(start, end);
   return workdays * hoursPerDay
 }
 
@@ -1811,28 +1812,28 @@ function calculateWorkHours(start, end, hoursPerDay = 8) {
  * @returns {Object} Object with startDate and endDate of the week
  */
 function getWeekRange(day, startDay = 1) {
-  const fd = formatDate(day)
-  const dateObj = new Date(fd.date + 'T00:00:00')
+  const fd = formatDate(day);
+  const dateObj = new Date(fd.date + 'T00:00:00');
 
-  const currentDayOfWeek = dateObj.getDay()
+  const currentDayOfWeek = dateObj.getDay();
   // Calculate how many days to go back to reach startDay
-  const daysToSubtract = (currentDayOfWeek - startDay + 7) % 7
+  const daysToSubtract = (currentDayOfWeek - startDay + 7) % 7;
 
-  const startOfWeek = new Date(dateObj)
-  startOfWeek.setDate(dateObj.getDate() - daysToSubtract)
+  const startOfWeek = new Date(dateObj);
+  startOfWeek.setDate(dateObj.getDate() - daysToSubtract);
 
-  const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(startOfWeek.getDate() + 6)
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-  const startYear = startOfWeek.getFullYear()
-  const startMonth = String(startOfWeek.getMonth() + 1).padStart(2, '0')
-  const startDate = String(startOfWeek.getDate()).padStart(2, '0')
-  const weekStart = `${startYear}-${startMonth}-${startDate}`
+  const startYear = startOfWeek.getFullYear();
+  const startMonth = String(startOfWeek.getMonth() + 1).padStart(2, '0');
+  const startDate = String(startOfWeek.getDate()).padStart(2, '0');
+  const weekStart = `${startYear}-${startMonth}-${startDate}`;
 
-  const endYear = endOfWeek.getFullYear()
-  const endMonth = String(endOfWeek.getMonth() + 1).padStart(2, '0')
-  const endDate = String(endOfWeek.getDate()).padStart(2, '0')
-  const weekEnd = `${endYear}-${endMonth}-${endDate}`
+  const endYear = endOfWeek.getFullYear();
+  const endMonth = String(endOfWeek.getMonth() + 1).padStart(2, '0');
+  const endDate = String(endOfWeek.getDate()).padStart(2, '0');
+  const weekEnd = `${endYear}-${endMonth}-${endDate}`;
 
   return {
     startDate: weekStart,
@@ -1846,25 +1847,25 @@ function getWeekRange(day, startDay = 1) {
  * @returns {Object} Object with startDate and endDate of the month
  */
 function getMonthRange(day) {
-  const fd = formatDate(day)
-  const parts = fd.date.split('-')
-  const year = parseInt(parts[0])
-  const month = parseInt(parts[1]) - 1 // Month is 0-indexed in JavaScript Date
+  const fd = formatDate(day);
+  const parts = fd.date.split('-');
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1; // Month is 0-indexed in JavaScript Date
 
   // First day of the month
-  const startOfMonth = new Date(year, month, 1)
+  const startOfMonth = new Date(year, month, 1);
   // Last day of the month
-  const endOfMonth = new Date(year, month + 1, 0)
+  const endOfMonth = new Date(year, month + 1, 0);
 
-  const startYear = startOfMonth.getFullYear()
-  const startMonth = String(startOfMonth.getMonth() + 1).padStart(2, '0')
-  const startDate = String(startOfMonth.getDate()).padStart(2, '0')
-  const monthStart = `${startYear}-${startMonth}-${startDate}`
+  const startYear = startOfMonth.getFullYear();
+  const startMonth = String(startOfMonth.getMonth() + 1).padStart(2, '0');
+  const startDate = String(startOfMonth.getDate()).padStart(2, '0');
+  const monthStart = `${startYear}-${startMonth}-${startDate}`;
 
-  const endYear = endOfMonth.getFullYear()
-  const endMonth = String(endOfMonth.getMonth() + 1).padStart(2, '0')
-  const endDate = String(endOfMonth.getDate()).padStart(2, '0')
-  const monthEnd = `${endYear}-${endMonth}-${endDate}`
+  const endYear = endOfMonth.getFullYear();
+  const endMonth = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+  const endDate = String(endOfMonth.getDate()).padStart(2, '0');
+  const monthEnd = `${endYear}-${endMonth}-${endDate}`;
 
   return {
     startDate: monthStart,
@@ -1884,7 +1885,7 @@ function getMonthRange(day) {
  */
 function isWithinOfficeHours(date, options = {}) {
   if (!(date instanceof Date)) {
-    date = new Date(date)
+    date = new Date(date);
   }
 
   const {
@@ -1892,10 +1893,10 @@ function isWithinOfficeHours(date, options = {}) {
     endHour = 18,
     startDay = 1, // Monday
     endDay = 5 // Friday
-  } = options
+  } = options;
 
-  const dayOfWeek = date.getDay()
-  const hour = date.getHours()
+  const dayOfWeek = date.getDay();
+  const hour = date.getHours();
 
   // Check if it's a work day
   if (dayOfWeek < startDay || dayOfWeek > endDay) {
@@ -1903,7 +1904,7 @@ function isWithinOfficeHours(date, options = {}) {
   }
 
   // Check if it's a holiday
-  const dateStr = formatDate(date).date
+  const dateStr = formatDate(date).date;
   if (!isWorkday(dateStr)) {
     return false
   }
@@ -1921,7 +1922,7 @@ function isWithinOfficeHours(date, options = {}) {
 // ============================================================================
 
 // Store user leave balances
-let leaveBalances = {}
+let leaveBalances = {};
 
 /**
  * Set initial leave balance for a user
@@ -1944,9 +1945,9 @@ function setLeaveBalance(userId, balances) {
     maternity: 0,
     paternity: 0,
     custom: {}
-  }
+  };
 
-  leaveBalances[userId] = { ...defaultBalances, ...balances }
+  leaveBalances[userId] = { ...defaultBalances, ...balances };
 }
 
 /**
@@ -1968,17 +1969,17 @@ function getLeaveBalance(userId) {
  * @returns {Object} Result object with success status and message
  */
 function applyLeave(userId, leaveType, startDate, endDate, includeWorkdays = true) {
-  const userBalance = leaveBalances[userId]
+  const userBalance = leaveBalances[userId];
   if (!userBalance) {
     return { success: false, message: 'User not found', remainingBalance: null }
   }
 
   // Calculate leave days based on type
-  let leaveDays
+  let leaveDays;
   if (includeWorkdays) {
-    leaveDays = countWorkdays(startDate, endDate)
+    leaveDays = countWorkdays(startDate, endDate);
   } else {
-    leaveDays = getTotalDays(startDate, endDate)
+    leaveDays = getTotalDays(startDate, endDate);
   }
 
   // Check if it's a custom leave type or predefined type
@@ -1998,7 +1999,7 @@ function applyLeave(userId, leaveType, startDate, endDate, includeWorkdays = tru
     }
 
     // Deduct leave days from balance
-    userBalance[leaveType] -= leaveDays
+    userBalance[leaveType] -= leaveDays;
 
     return {
       success: true,
@@ -2023,14 +2024,14 @@ function applyLeave(userId, leaveType, startDate, endDate, includeWorkdays = tru
  * @returns {Object} Result object
  */
 function addLeaveDays(userId, leaveType, days) {
-  const userBalance = leaveBalances[userId]
+  const userBalance = leaveBalances[userId];
   if (!userBalance) {
     return { success: false, message: 'User not found', remainingBalance: null }
   }
 
   if (userBalance.hasOwnProperty(leaveType)) {
     // Add to predefined leave type
-    userBalance[leaveType] = (userBalance[leaveType] || 0) + days
+    userBalance[leaveType] = (userBalance[leaveType] || 0) + days;
 
     return {
       success: true,
@@ -2040,7 +2041,7 @@ function addLeaveDays(userId, leaveType, days) {
   } else if (leaveType === 'custom' && typeof days === 'object') {
     // For custom leaves, days is an object with leave type and value
     for (const [customType, customDays] of Object.entries(days)) {
-      userBalance.custom[customType] = (userBalance.custom[customType] || 0) + customDays
+      userBalance.custom[customType] = (userBalance.custom[customType] || 0) + customDays;
     }
 
     return {
@@ -2051,7 +2052,7 @@ function addLeaveDays(userId, leaveType, days) {
   } else if (typeof days === 'number' && leaveType.startsWith('custom_')) {
     // For specific custom leave type like 'custom_study', 'custom_emergency', etc.
     userBalance.custom[leaveType.substring(7)] =
-      (userBalance.custom[leaveType.substring(7)] || 0) + days
+      (userBalance.custom[leaveType.substring(7)] || 0) + days;
 
     return {
       success: true,
@@ -2076,25 +2077,25 @@ function addLeaveDays(userId, leaveType, days) {
  */
 function calculateActualWorkdays(startDate, endDate, leaveRecords = []) {
   // First calculate total workdays in the range
-  const totalWorkdays = countWorkdays(startDate, endDate)
+  const totalWorkdays = countWorkdays(startDate, endDate);
 
   // Calculate workdays during leave periods
-  let totalLeaveWorkdays = 0
+  let totalLeaveWorkdays = 0;
   for (const leave of leaveRecords) {
     if (leave.approved) {
       // Only count approved leaves
       // Find the intersection of leave period and the given range
-      const leaveStart = formatDate(leave.startDate).date
-      const leaveEnd = formatDate(leave.endDate).date
-      const rangeStart = formatDate(startDate).date
-      const rangeEnd = formatDate(endDate).date
+      const leaveStart = formatDate(leave.startDate).date;
+      const leaveEnd = formatDate(leave.endDate).date;
+      const rangeStart = formatDate(startDate).date;
+      const rangeEnd = formatDate(endDate).date;
 
       // Calculate intersection
-      const intersectStart = leaveStart > rangeStart ? leaveStart : rangeStart
-      const intersectEnd = leaveEnd < rangeEnd ? leaveEnd : rangeEnd
+      const intersectStart = leaveStart > rangeStart ? leaveStart : rangeStart;
+      const intersectEnd = leaveEnd < rangeEnd ? leaveEnd : rangeEnd;
 
       if (intersectStart <= intersectEnd) {
-        totalLeaveWorkdays += countWorkdays(intersectStart, intersectEnd)
+        totalLeaveWorkdays += countWorkdays(intersectStart, intersectEnd);
       }
     }
   }
@@ -2121,30 +2122,30 @@ function generateCalendar(year, month, options = {}) {
     startDay = 1, // Monday
     includeFestival = true,
     includeLunar = false
-  } = options
+  } = options;
 
   // Create date for first day of month
-  const firstDay = new Date(year, month - 1, 1)
+  const firstDay = new Date(year, month - 1, 1);
   // Create date for last day of month
-  const lastDay = new Date(year, month, 0)
-  const daysInMonth = lastDay.getDate()
+  const lastDay = new Date(year, month, 0);
+  const daysInMonth = lastDay.getDate();
 
   // Determine what day of week the month starts on
-  const monthStartDay = firstDay.getDay() // 0=Sunday, 1=Monday, etc.
+  const monthStartDay = firstDay.getDay(); // 0=Sunday, 1=Monday, etc.
   // Calculate how many days to show from previous month
-  const prevMonthOffset = (monthStartDay - startDay + 7) % 7
+  const prevMonthOffset = (monthStartDay - startDay + 7) % 7;
 
   // Create the calendar matrix
-  const calendar = []
-  let week = []
+  const calendar = [];
+  let week = [];
 
   // Add days from previous month
-  const prevMonthLastDay = new Date(year, month - 1, 0).getDate()
+  const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
   for (let i = 0; i < prevMonthOffset; i++) {
-    const dayNum = prevMonthLastDay - prevMonthOffset + i + 1
-    const prevMonth = month === 1 ? 12 : month - 1
-    const prevYear = month === 1 ? year - 1 : year
-    const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+    const dayNum = prevMonthLastDay - prevMonthOffset + i + 1;
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
 
     const dayInfo = {
       year: prevYear,
@@ -2153,23 +2154,23 @@ function generateCalendar(year, month, options = {}) {
       dayType: 'prevMonth',
       isWorkday: isWorkday(dateStr),
       dateStr: dateStr
-    }
+    };
 
     if (includeFestival) {
-      dayInfo.festival = getFestival(dateStr)
+      dayInfo.festival = getFestival(dateStr);
     }
 
     if (includeLunar) {
-      const lunarInfo = getLunarInfo(dateStr)
-      dayInfo.lunar = lunarInfo.lunarString
+      const lunarInfo = getLunarInfo(dateStr);
+      dayInfo.lunar = lunarInfo.lunarString;
     }
 
-    week.push(dayInfo)
+    week.push(dayInfo);
   }
 
   // Add days from current month
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
     const dayInfo = {
       year: year,
@@ -2178,33 +2179,33 @@ function generateCalendar(year, month, options = {}) {
       dayType: 'currentMonth',
       isWorkday: isWorkday(dateStr),
       dateStr: dateStr
-    }
+    };
 
     if (includeFestival) {
-      dayInfo.festival = getFestival(dateStr)
+      dayInfo.festival = getFestival(dateStr);
     }
 
     if (includeLunar) {
-      const lunarInfo = getLunarInfo(dateStr)
-      dayInfo.lunar = lunarInfo.lunarString
+      const lunarInfo = getLunarInfo(dateStr);
+      dayInfo.lunar = lunarInfo.lunarString;
     }
 
-    week.push(dayInfo)
+    week.push(dayInfo);
 
     // If week is full (7 days), add it to calendar and start a new week
     if (week.length === 7) {
-      calendar.push(week)
-      week = []
+      calendar.push(week);
+      week = [];
     }
   }
 
   // Add days from next month to fill the last week
-  const remainingDays = 7 - week.length
+  const remainingDays = 7 - week.length;
   for (let i = 0; i < remainingDays; i++) {
-    const dayNum = i + 1
-    const nextMonth = month === 12 ? 1 : month + 1
-    const nextYear = month === 12 ? year + 1 : year
-    const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+    const dayNum = i + 1;
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
 
     const dayInfo = {
       year: nextYear,
@@ -2213,23 +2214,23 @@ function generateCalendar(year, month, options = {}) {
       dayType: 'nextMonth',
       isWorkday: isWorkday(dateStr),
       dateStr: dateStr
-    }
+    };
 
     if (includeFestival) {
-      dayInfo.festival = getFestival(dateStr)
+      dayInfo.festival = getFestival(dateStr);
     }
 
     if (includeLunar) {
-      const lunarInfo = getLunarInfo(dateStr)
-      dayInfo.lunar = lunarInfo.lunarString
+      const lunarInfo = getLunarInfo(dateStr);
+      dayInfo.lunar = lunarInfo.lunarString;
     }
 
-    week.push(dayInfo)
+    week.push(dayInfo);
   }
 
   // Add the final week if it has any days
   if (week.length > 0) {
-    calendar.push(week)
+    calendar.push(week);
   }
 
   return calendar
@@ -2242,24 +2243,24 @@ function generateCalendar(year, month, options = {}) {
  * @returns {Object} Compact calendar with metadata
  */
 function generateCompactCalendar(year, month) {
-  const calendar = generateCalendar(year, month)
+  const calendar = generateCalendar(year, month);
 
   // Calculate summary statistics
-  let workdays = 0
-  let holidays = 0
-  let weekends = 0
+  let workdays = 0;
+  let holidays = 0;
+  let weekends = 0;
 
   for (const week of calendar) {
     for (const day of week) {
       if (day.dayType === 'currentMonth') {
         if (day.isWorkday) {
-          workdays++
+          workdays++;
         } else {
           // Check if it's a holiday or weekend
           if (HOLIDAYS[day.dateStr]) {
-            holidays++
+            holidays++;
           } else {
-            weekends++
+            weekends++;
           }
         }
       }
@@ -2287,31 +2288,28 @@ function generateCompactCalendar(year, month) {
  * @returns {Array} Array of date strings
  */
 function getDaysInMonth(year, month, type = 'workdays') {
-  const result = []
-
-  // Create date for first day of month
-  const firstDay = new Date(year, month - 1, 1)
+  const result = [];
   // Create date for last day of month
-  const lastDay = new Date(year, month, 0)
-  const daysInMonth = lastDay.getDate()
+  const lastDay = new Date(year, month, 0);
+  const daysInMonth = lastDay.getDate();
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-    let include = false
+    let include = false;
     if (type === 'workdays') {
-      include = isWorkday(dateStr)
+      include = isWorkday(dateStr);
     } else if (type === 'holidays') {
-      include = !isWorkday(dateStr) && HOLIDAYS[dateStr]
+      include = !isWorkday(dateStr) && HOLIDAYS[dateStr];
     } else if (type === 'weekends') {
-      include = !isWorkday(dateStr) && !HOLIDAYS[dateStr]
+      include = !isWorkday(dateStr) && !HOLIDAYS[dateStr];
     } else {
       // all
-      include = true
+      include = true;
     }
 
     if (include) {
-      result.push(dateStr)
+      result.push(dateStr);
     }
   }
 
@@ -2330,30 +2328,30 @@ function getDaysInMonth(year, month, type = 'workdays') {
  */
 function isWorkdayInTimezone(date, timeZone = 'Asia/Shanghai') {
   // Format the input date to get the date string in the specified timezone
-  let dateObj
+  let dateObj;
 
   if (typeof date === 'string') {
     // If date is in YYYY-MM-DD format, treat it as start of day in the timezone
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       // Create date in specified timezone - interpret the date string as local to the timezone
-      const [year, month, day] = date.split('-').map(Number)
+      const [year, month, day] = date.split('-').map(Number);
       // Create the date in UTC to avoid local timezone interference
-      dateObj = new Date(Date.UTC(year, month - 1, day))
+      dateObj = new Date(Date.UTC(year, month - 1, day));
       // Then get the date components in the target timezone
-      const tzDate = new Date(dateObj.toLocaleString('en-US', { timeZone }))
-      const tzYear = tzDate.getFullYear()
-      const tzMonth = tzDate.getMonth() + 1
-      const tzDay = tzDate.getDate()
-      const dateStr = `${tzYear}-${String(tzMonth).padStart(2, '0')}-${String(tzDay).padStart(2, '0')}`
+      const tzDate = new Date(dateObj.toLocaleString('en-US', { timeZone }));
+      const tzYear = tzDate.getFullYear();
+      const tzMonth = tzDate.getMonth() + 1;
+      const tzDay = tzDate.getDate();
+      const dateStr = `${tzYear}-${String(tzMonth).padStart(2, '0')}-${String(tzDay).padStart(2, '0')}`;
       return isWorkday(dateStr)
     } else {
       // If it's a full datetime string, parse it
-      dateObj = new Date(date)
+      dateObj = new Date(date);
     }
   } else if (date instanceof Date) {
-    dateObj = date
+    dateObj = date;
   } else if (typeof date === 'number') {
-    dateObj = new Date(date)
+    dateObj = new Date(date);
   } else {
     throw new Error('Invalid date format')
   }
@@ -2364,12 +2362,12 @@ function isWorkdayInTimezone(date, timeZone = 'Asia/Shanghai') {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
-  }
+  };
 
   // Format the date in the target timezone
-  const formatter = new Intl.DateTimeFormat('en-CA', options) // 'en-CA' gives YYYY-MM-DD format
-  const [year, month, day] = formatter.format(dateObj).split('-')
-  const dateStr = `${year}-${month}-${day}`
+  const formatter = new Intl.DateTimeFormat('en-CA', options); // 'en-CA' gives YYYY-MM-DD format
+  const [year, month, day] = formatter.format(dateObj).split('-');
+  const dateStr = `${year}-${month}-${day}`;
 
   return isWorkday(dateStr)
 }
@@ -2381,10 +2379,10 @@ function isWorkdayInTimezone(date, timeZone = 'Asia/Shanghai') {
  * @returns {Object} Object with timezone as key and workday status as value
  */
 function getWorkdayInMultipleTimezones(timestamp, timezones) {
-  const results = {}
+  const results = {};
 
   for (const tz of timezones) {
-    results[tz] = isWorkdayInTimezone(timestamp, tz)
+    results[tz] = isWorkdayInTimezone(timestamp, tz);
   }
 
   return results
@@ -2399,21 +2397,21 @@ function getWorkdayInMultipleTimezones(timestamp, timezones) {
  * @returns {Object} Conversion result with date string and workday status
  */
 function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWorkday = true) {
-  let dateObj
+  let dateObj;
 
   if (typeof date === 'string') {
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       // Handle YYYY-MM-DD format
-      const [year, month, day] = date.split('-').map(Number)
+      const [year, month, day] = date.split('-').map(Number);
       // Create a date at noon to avoid DST issues
-      dateObj = new Date(year, month - 1, day, 12, 0, 0)
+      dateObj = new Date(year, month - 1, day, 12, 0, 0);
     } else {
-      dateObj = new Date(date)
+      dateObj = new Date(date);
     }
   } else if (date instanceof Date) {
-    dateObj = date
+    dateObj = date;
   } else if (typeof date === 'number') {
-    dateObj = new Date(date)
+    dateObj = new Date(date);
   } else {
     throw new Error('Invalid date format')
   }
@@ -2428,33 +2426,33 @@ function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWor
     minute: '2-digit',
     second: '2-digit',
     hour12: false
-  }
+  };
 
   // Format the time in the source timezone
-  const sourceFormatter = new Intl.DateTimeFormat('en-CA', sourceTimeOptions)
-  const sourceFormatted = sourceFormatter.formatToParts(dateObj)
+  const sourceFormatter = new Intl.DateTimeFormat('en-CA', sourceTimeOptions);
+  const sourceFormatted = sourceFormatter.formatToParts(dateObj);
 
   // Extract parts
-  let sourceYear, sourceMonth, sourceDay, sourceHour, sourceMinute, sourceSecond
+  let sourceYear, sourceMonth, sourceDay, sourceHour, sourceMinute, sourceSecond;
   for (const part of sourceFormatted) {
     switch (part.type) {
       case 'year':
-        sourceYear = part.value
+        sourceYear = part.value;
         break
       case 'month':
-        sourceMonth = part.value
+        sourceMonth = part.value;
         break
       case 'day':
-        sourceDay = part.value
+        sourceDay = part.value;
         break
       case 'hour':
-        sourceHour = part.value
+        sourceHour = part.value;
         break
       case 'minute':
-        sourceMinute = part.value
+        sourceMinute = part.value;
         break
       case 'second':
-        sourceSecond = part.value
+        sourceSecond = part.value;
         break
     }
   }
@@ -2462,14 +2460,14 @@ function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWor
   // Create a new date from the source time components
   const sourceDate = new Date(
     `${sourceYear}-${sourceMonth}-${sourceDay}T${sourceHour}:${sourceMinute}:${sourceSecond}`
-  )
+  );
 
   // Convert to target timezone by getting its components
-  const targetDate = new Date(sourceDate.toLocaleString('en-US', { timeZone: toTimeZone }))
-  const targetYear = targetDate.getFullYear()
-  const targetMonth = targetDate.getMonth() + 1
-  const targetDay = targetDate.getDate()
-  const targetDateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`
+  const targetDate = new Date(sourceDate.toLocaleString('en-US', { timeZone: toTimeZone }));
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = targetDate.getMonth() + 1;
+  const targetDay = targetDate.getDate();
+  const targetDateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
 
   return {
     originalDate: formatDate(date).date,
@@ -2485,8 +2483,8 @@ function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWor
 // ============================================================================
 
 // Store scheduled events
-let scheduledEvents = {}
-let eventTimers = {}
+let scheduledEvents = {};
+let eventTimers = {};
 
 /**
  * Schedule a function to run on the next workday
@@ -2500,20 +2498,20 @@ function scheduleEventNextWorkday(eventId, callback, startDate) {
     throw new Error('Callback must be a function')
   }
 
-  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date
-  const nextWorkdayDate = nextWorkday(start)
+  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date;
+  const nextWorkdayDate = nextWorkday(start);
 
   if (!nextWorkdayDate) {
     throw new Error('Could not find next workday within reasonable range')
   }
 
-  const eventDate = new Date(nextWorkdayDate + 'T00:00:00')
-  const now = new Date()
-  const timeUntilEvent = eventDate.getTime() - now.getTime()
+  const eventDate = new Date(nextWorkdayDate + 'T00:00:00');
+  const now = new Date();
+  const timeUntilEvent = eventDate.getTime() - now.getTime();
 
   // Clear any existing timer for this event
   if (eventTimers[eventId]) {
-    clearTimeout(eventTimers[eventId])
+    clearTimeout(eventTimers[eventId]);
   }
 
   // Store event info
@@ -2521,21 +2519,21 @@ function scheduleEventNextWorkday(eventId, callback, startDate) {
     callback,
     scheduledDate: nextWorkdayDate,
     type: 'next_workday'
-  }
+  };
 
   // Set timer if the event is in the future
   if (timeUntilEvent > 0) {
     eventTimers[eventId] = setTimeout(() => {
-      callback(nextWorkdayDate)
+      callback(nextWorkdayDate);
       // Remove event after execution
-      delete scheduledEvents[eventId]
-      delete eventTimers[eventId]
-    }, timeUntilEvent)
+      delete scheduledEvents[eventId];
+      delete eventTimers[eventId];
+    }, timeUntilEvent);
   } else {
     // If the time has already passed today, execute immediately
-    callback(nextWorkdayDate)
-    delete scheduledEvents[eventId]
-    delete eventTimers[eventId]
+    callback(nextWorkdayDate);
+    delete scheduledEvents[eventId];
+    delete eventTimers[eventId];
   }
 
   return eventId
@@ -2553,19 +2551,19 @@ function scheduleEventOnWorkday(eventId, callback, targetDate) {
     throw new Error('Callback must be a function')
   }
 
-  const target = formatDate(targetDate).date
+  const target = formatDate(targetDate).date;
 
   if (!isWorkday(target)) {
     throw new Error(`Target date ${target} is not a workday`)
   }
 
-  const eventDate = new Date(target + 'T00:00:00')
-  const now = new Date()
-  const timeUntilEvent = eventDate.getTime() - now.getTime()
+  const eventDate = new Date(target + 'T00:00:00');
+  const now = new Date();
+  const timeUntilEvent = eventDate.getTime() - now.getTime();
 
   // Clear any existing timer for this event
   if (eventTimers[eventId]) {
-    clearTimeout(eventTimers[eventId])
+    clearTimeout(eventTimers[eventId]);
   }
 
   // Store event info
@@ -2573,20 +2571,20 @@ function scheduleEventOnWorkday(eventId, callback, targetDate) {
     callback,
     scheduledDate: target,
     type: 'specific_workday'
-  }
+  };
 
   if (timeUntilEvent > 0) {
     eventTimers[eventId] = setTimeout(() => {
-      callback(target)
+      callback(target);
       // Remove event after execution
-      delete scheduledEvents[eventId]
-      delete eventTimers[eventId]
-    }, timeUntilEvent)
+      delete scheduledEvents[eventId];
+      delete eventTimers[eventId];
+    }, timeUntilEvent);
   } else {
     // If the time has already passed, execute immediately
-    callback(target)
-    delete scheduledEvents[eventId]
-    delete eventTimers[eventId]
+    callback(target);
+    delete scheduledEvents[eventId];
+    delete eventTimers[eventId];
   }
 
   return eventId
@@ -2609,8 +2607,8 @@ function scheduleEventAfterWorkdays(eventId, callback, workdays, startDate) {
     throw new Error('Workdays must be a positive number')
   }
 
-  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date
-  const futureDate = addWorkdays(start, workdays)
+  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date;
+  const futureDate = addWorkdays(start, workdays);
 
   if (!futureDate) {
     throw new Error(`Could not calculate a date ${workdays} workdays from ${start}`)
@@ -2626,9 +2624,9 @@ function scheduleEventAfterWorkdays(eventId, callback, workdays, startDate) {
  */
 function cancelScheduledEvent(eventId) {
   if (eventTimers[eventId]) {
-    clearTimeout(eventTimers[eventId])
-    delete eventTimers[eventId]
-    delete scheduledEvents[eventId]
+    clearTimeout(eventTimers[eventId]);
+    delete eventTimers[eventId];
+    delete scheduledEvents[eventId];
     return true
   }
 
@@ -2649,82 +2647,70 @@ function getScheduledEvent(eventId) {
  * @returns {Array} Array of scheduled event information
  */
 function getAllScheduledEvents() {
-  const events = []
+  const events = [];
   for (const [id, event] of Object.entries(scheduledEvents)) {
     events.push({
       eventId: id,
       ...event
-    })
+    });
   }
   return events
 }
 
-// Export functions (must be at the end after all function definitions)
-export {
-  isWorkday,
-  isHoliday,
-  getFestival,
-  isAddtionalWorkday,
-  isAdditionalWorkday,
-  isWorkdayBatch,
-  isHolidayBatch,
-  getFestivalBatch,
-  getCacheStats,
-  clearCache,
-  countWorkdays,
-  getWorkdaysInRange,
-  getHolidaysInRange,
-  nextWorkday,
-  previousWorkday,
-  isWeekend,
-  getLunarInfo,
-  // Utility functions added in v1.4.0
-  getWorkdaysInterval,
-  addWorkdays,
-  getWorkdaySequence,
-  getAnnualStats,
-  // Holiday reminder functions added in v1.5.0
-  getNextHoliday,
-  daysUntilHoliday,
-  isHolidayApproaching,
-  getConsecutiveHolidays,
-  // Custom work schedule functions added in v1.6.0
-  setWorkSchedule,
-  getWorkSchedule,
-  isWorkdayCustom,
-  isHolidayCustom,
-  clearWorkSchedule,
-  getAvailableSchedules,
-  // Advanced statistics functions added in v1.7.0
-  getMonthlyStats,
-  getWorkdayRatio,
-  getMostCommonHoliday,
-  getHolidaysByFestival,
-  // Work time related functions added in v1.8.0
-  getTotalDays,
-  calculateWorkHours,
-  getWeekRange,
-  getMonthRange,
-  isWithinOfficeHours,
-  // Leave management functions added in v1.9.0
-  setLeaveBalance,
-  getLeaveBalance,
-  applyLeave,
-  addLeaveDays,
-  calculateActualWorkdays,
-  // Calendar generation functions added in v2.0.0
-  generateCalendar,
-  generateCompactCalendar,
-  getDaysInMonth,
-  // Time zone support functions added in v2.1.0
-  isWorkdayInTimezone,
-  getWorkdayInMultipleTimezones,
-  convertTimezoneAndCheckWorkday,
-  // Workday event scheduling functions added in v2.2.0
-  scheduleEventNextWorkday,
-  scheduleEventOnWorkday,
-  scheduleEventAfterWorkdays,
-  cancelScheduledEvent,
-  getScheduledEvent,
-  getAllScheduledEvents
-}
+exports.addLeaveDays = addLeaveDays;
+exports.addWorkdays = addWorkdays;
+exports.applyLeave = applyLeave;
+exports.calculateActualWorkdays = calculateActualWorkdays;
+exports.calculateWorkHours = calculateWorkHours;
+exports.cancelScheduledEvent = cancelScheduledEvent;
+exports.clearCache = clearCache;
+exports.clearWorkSchedule = clearWorkSchedule;
+exports.convertTimezoneAndCheckWorkday = convertTimezoneAndCheckWorkday;
+exports.countWorkdays = countWorkdays;
+exports.daysUntilHoliday = daysUntilHoliday;
+exports.generateCalendar = generateCalendar;
+exports.generateCompactCalendar = generateCompactCalendar;
+exports.getAllScheduledEvents = getAllScheduledEvents;
+exports.getAnnualStats = getAnnualStats;
+exports.getAvailableSchedules = getAvailableSchedules;
+exports.getCacheStats = getCacheStats;
+exports.getConsecutiveHolidays = getConsecutiveHolidays;
+exports.getDaysInMonth = getDaysInMonth;
+exports.getFestival = getFestival;
+exports.getFestivalBatch = getFestivalBatch;
+exports.getHolidaysByFestival = getHolidaysByFestival;
+exports.getHolidaysInRange = getHolidaysInRange;
+exports.getLeaveBalance = getLeaveBalance;
+exports.getLunarInfo = getLunarInfo;
+exports.getMonthRange = getMonthRange;
+exports.getMonthlyStats = getMonthlyStats;
+exports.getMostCommonHoliday = getMostCommonHoliday;
+exports.getNextHoliday = getNextHoliday;
+exports.getScheduledEvent = getScheduledEvent;
+exports.getTotalDays = getTotalDays;
+exports.getWeekRange = getWeekRange;
+exports.getWorkSchedule = getWorkSchedule;
+exports.getWorkdayInMultipleTimezones = getWorkdayInMultipleTimezones;
+exports.getWorkdayRatio = getWorkdayRatio;
+exports.getWorkdaySequence = getWorkdaySequence;
+exports.getWorkdaysInRange = getWorkdaysInRange;
+exports.getWorkdaysInterval = getWorkdaysInterval;
+exports.isAdditionalWorkday = isAdditionalWorkday;
+exports.isAddtionalWorkday = isAddtionalWorkday;
+exports.isHoliday = isHoliday;
+exports.isHolidayApproaching = isHolidayApproaching;
+exports.isHolidayBatch = isHolidayBatch;
+exports.isHolidayCustom = isHolidayCustom;
+exports.isWeekend = isWeekend;
+exports.isWithinOfficeHours = isWithinOfficeHours;
+exports.isWorkday = isWorkday;
+exports.isWorkdayBatch = isWorkdayBatch;
+exports.isWorkdayCustom = isWorkdayCustom;
+exports.isWorkdayInTimezone = isWorkdayInTimezone;
+exports.nextWorkday = nextWorkday;
+exports.previousWorkday = previousWorkday;
+exports.scheduleEventAfterWorkdays = scheduleEventAfterWorkdays;
+exports.scheduleEventNextWorkday = scheduleEventNextWorkday;
+exports.scheduleEventOnWorkday = scheduleEventOnWorkday;
+exports.setLeaveBalance = setLeaveBalance;
+exports.setWorkSchedule = setWorkSchedule;

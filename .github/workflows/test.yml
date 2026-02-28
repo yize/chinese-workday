@@ -2,66 +2,66 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, v2.0.0]
   pull_request:
-    branches: [ master ]
+    branches: [master, v2.0.0]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        
-    - name: Run simple tests
-      run: node test-simple.js
-      
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run simple tests
+        run: node test-simple.js
+
   coverage:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        
-    - name: Run comprehensive validation
-      run: |
-        node -e "
-        const ww = require('./src/index.js');
-        // Test all exported functions
-        console.log('Testing basic functions...');
-        console.log('isWorkday:', ww.isWorkday('2024-10-01'));
-        console.log('isHoliday:', ww.isHoliday('2024-10-01'));
-        console.log('getFestival:', ww.getFestival('2024-10-01'));
-        console.log('isAddtionalWorkday:', ww.isAddtionalWorkday('2024-02-04'));
-        console.log('isWeekend:', ww.isWeekend('2024-10-05'));
-        
-        console.log('Testing batch functions...');
-        console.log('isWorkdayBatch:', ww.isWorkdayBatch(['2024-10-01', '2024-10-02']));
-        console.log('isHolidayBatch:', ww.isHolidayBatch(['2024-10-01', '2024-10-02']));
-        console.log('getFestivalBatch:', ww.getFestivalBatch(['2024-10-01', '2024-10-02']));
-        
-        console.log('Testing advanced functions...');
-        console.log('countWorkdays:', ww.countWorkdays('2024-05-01', '2024-05-10'));
-        console.log('nextWorkday:', ww.nextWorkday('2024-10-01'));
-        console.log('previousWorkday:', ww.previousWorkday('2024-10-01'));
-        console.log('getWorkdaysInRange:', ww.getWorkdaysInRange('2024-05-01', '2024-05-03'));
-        console.log('getHolidaysInRange:', ww.getHolidaysInRange('2024-05-01', '2024-05-03'));
-        
-        console.log('Testing cache...');
-        console.log('getCacheStats:', ww.getCacheStats());
-        
-        console.log('All functions working correctly!');
-        "
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Run comprehensive validation
+        run: |
+          node -e "
+          const ww = require('./src/index.js');
+          // Test all exported functions
+          console.log('Testing basic functions...');
+          console.log('isWorkday:', ww.isWorkday('2024-10-01'));
+          console.log('isHoliday:', ww.isHoliday('2024-10-01'));
+          console.log('getFestival:', ww.getFestival('2024-10-01'));
+          console.log('isAddtionalWorkday:', ww.isAddtionalWorkday('2024-02-04'));
+          console.log('isWeekend:', ww.isWeekend('2024-10-05'));
+
+          console.log('Testing batch functions...');
+          console.log('isWorkdayBatch:', ww.isWorkdayBatch(['2024-10-01', '2024-10-02']));
+          console.log('isHolidayBatch:', ww.isHolidayBatch(['2024-10-01', '2024-10-02']));
+          console.log('getFestivalBatch:', ww.getFestivalBatch(['2024-10-01', '2024-10-02']));
+
+          console.log('Testing advanced functions...');
+          console.log('countWorkdays:', ww.countWorkdays('2024-05-01', '2024-05-10'));
+          console.log('nextWorkday:', ww.nextWorkday('2024-10-01'));
+          console.log('previousWorkday:', ww.previousWorkday('2024-10-01'));
+          console.log('getWorkdaysInRange:', ww.getWorkdaysInRange('2024-05-01', '2024-05-03'));
+          console.log('getHolidaysInRange:', ww.getHolidaysInRange('2024-05-01', '2024-05-03'));
+
+          console.log('Testing cache...');
+          console.log('getCacheStats:', ww.getCacheStats());
+
+          console.log('All functions working correctly!');
+          "
