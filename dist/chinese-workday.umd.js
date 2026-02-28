@@ -6,7 +6,7 @@
 
   /***********************************************************************
    * Chinese Workday - Performance Optimized Version
-   * 
+   *
    * Performance Improvements:
    * 1. Added LRU cache for query results (max 1000 entries)
    * 2. Pre-computed weekend dates (2011-2026)
@@ -14,7 +14,7 @@
    * 4. Added batch query support for multiple dates
    * 5. Reduced object allocations
    * 6. Improved error handling
-   * 
+   *
    * Benchmarks:
    * - Single query: ~40% faster
    * - Batch queries: ~60% faster
@@ -52,7 +52,7 @@
       this.hits = 0;
       this.misses = 0;
     }
-    
+
     get(key) {
       const value = this.cache.get(key);
       if (value !== undefined) {
@@ -65,7 +65,7 @@
       this.misses++;
       return undefined
     }
-    
+
     set(key, value) {
       // Delete if exists (will be moved to end)
       if (this.cache.has(key)) {
@@ -79,14 +79,14 @@
         this.cache.delete(firstKey);
       }
     }
-    
+
     getStats() {
       return {
         size: this.cache.size,
         maxSize: this.maxSize,
         hits: this.hits,
         misses: this.misses,
-        hitRate: this.hits / (this.hits + this.misses) * 100
+        hitRate: (this.hits / (this.hits + this.misses)) * 100
       }
     }
   }
@@ -549,7 +549,7 @@
     '2026-10-04': '国庆节',
     '2026-10-05': '国庆节',
     '2026-10-06': '国庆节',
-    '2026-10-07': '国庆节',
+    '2026-10-07': '国庆节'
   };
 
   // ============================================================================
@@ -649,7 +649,7 @@
     '2026-02-28': '补春节',
     '2026-05-09': '补劳动节',
     '2026-09-20': '补国庆节',
-    '2026-10-10': '补国庆节',
+    '2026-10-10': '补国庆节'
   };
 
   // ============================================================================
@@ -667,7 +667,7 @@
         weekends: false // Assume workday if undefined
       }
     }
-    
+
     // Handle Date object directly
     if (day instanceof Date) {
       const year = day.getFullYear();
@@ -675,13 +675,13 @@
       const date = String(day.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${date}`;
       const dayOfWeek = day.getDay();
-      
+
       return {
         date: dateStr,
         weekends: dayOfWeek === 0 || dayOfWeek === 6
       }
     }
-    
+
     // Handle timestamp (number)
     if (typeof day === 'number') {
       const dateObj = new Date(day);
@@ -690,13 +690,15 @@
       const date = String(dateObj.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${date}`;
       const dayOfWeek = dateObj.getDay();
-      
+
       return {
         date: dateStr,
         weekends: dayOfWeek === 0 || dayOfWeek === 6
       }
     }
-    
+
+    // Handle string input (support both - and / formats)
+
     // Check if it's a slash format (YYYY/MM/DD)
     if (day.includes('/')) {
       const parts = day.split('/');
@@ -707,26 +709,26 @@
         const dateObj = new Date(year, month, date);
         const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
         const dayOfWeek = dateObj.getDay();
-        
+
         return {
           date: formattedDate,
           weekends: dayOfWeek === 0 || dayOfWeek === 6
         }
       }
     }
-    
+
     // Standard format (YYYY-MM-DD)
     const d = new Date(day);
-    
+
     if (isNaN(d.getTime())) {
       throw new Error(`Invalid date: ${day}`)
     }
-    
+
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const date = String(d.getDate()).padStart(2, '0');
     const dayOfWeek = d.getDay();
-    
+
     return {
       date: `${year}-${month}-${date}`,
       weekends: dayOfWeek === 0 || dayOfWeek === 6
@@ -824,7 +826,7 @@
       // Not holiday: compute weekend
       const dateObj = new Date(day + 'T00:00:00');
       const dayOfWeek = dateObj.getDay();
-      const festival = (dayOfWeek === 0 || dayOfWeek === 6) ? '周末' : '工作日';
+      const festival = dayOfWeek === 0 || dayOfWeek === 6 ? '周末' : '工作日';
       dateCache.set(day, { festival });
       return festival
     }
@@ -855,15 +857,15 @@
   // Batch Query Functions (New Feature)
   // ============================================================================
   function isWorkdayBatch(days) {
-    return days.map(day => isWorkday(day))
+    return days.map((day) => isWorkday(day))
   }
 
   function isHolidayBatch(days) {
-    return days.map(day => isHoliday(day))
+    return days.map((day) => isHoliday(day))
   }
 
   function getFestivalBatch(days) {
-    return days.map(day => getFestival(day))
+    return days.map((day) => getFestival(day))
   }
 
   // ============================================================================
@@ -968,22 +970,22 @@
   // ============================================================================
 
   const LUNAR_NEW_YEAR = {
-    '2011': '2011-02-03',
-    '2012': '2012-01-23',
-    '2013': '2013-02-10',
-    '2014': '2014-01-31',
-    '2015': '2015-02-19',
-    '2016': '2016-02-08',
-    '2017': '2017-01-28',
-    '2018': '2018-02-16',
-    '2019': '2019-02-05',
-    '2020': '2020-01-25',
-    '2021': '2021-02-12',
-    '2022': '2022-02-01',
-    '2023': '2023-01-22',
-    '2024': '2024-02-10',
-    '2025': '2025-01-29',
-    '2026': '2026-02-17',
+    2011: '2011-02-03',
+    2012: '2012-01-23',
+    2013: '2013-02-10',
+    2014: '2014-01-31',
+    2015: '2015-02-19',
+    2016: '2016-02-08',
+    2017: '2017-01-28',
+    2018: '2018-02-16',
+    2019: '2019-02-05',
+    2020: '2020-01-25',
+    2021: '2021-02-12',
+    2022: '2022-02-01',
+    2023: '2023-01-22',
+    2024: '2024-02-10',
+    2025: '2025-01-29',
+    2026: '2026-02-17'
   };
 
   function getDaysBetween(date1, date2) {
@@ -1022,23 +1024,84 @@
   }
 
   function getLunarDateString(lunarMonth, lunarDay) {
-    const months = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '腊月'];
-    const days = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
-      '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
-      '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+    const months = [
+      '',
+      '正月',
+      '二月',
+      '三月',
+      '四月',
+      '五月',
+      '六月',
+      '七月',
+      '八月',
+      '九月',
+      '十月',
+      '冬月',
+      '腊月'
+    ];
+    const days = [
+      '',
+      '初一',
+      '初二',
+      '初三',
+      '初四',
+      '初五',
+      '初六',
+      '初七',
+      '初八',
+      '初九',
+      '初十',
+      '十一',
+      '十二',
+      '十三',
+      '十四',
+      '十五',
+      '十六',
+      '十七',
+      '十八',
+      '十九',
+      '二十',
+      '廿一',
+      '廿二',
+      '廿三',
+      '廿四',
+      '廿五',
+      '廿六',
+      '廿七',
+      '廿八',
+      '廿九',
+      '三十'
+    ];
     return `${months[lunarMonth] || lunarMonth + '月'}${days[lunarDay] || lunarDay}`
   }
 
   function getFestivalByLunar(month, day) {
-    const festivals = { '1-1': '春节', '1-15': '元宵节', '5-5': '端午节', '8-15': '中秋节', '9-9': '重阳节', '12-8': '腊八节', '12-23': '小年' };
+    const festivals = {
+      '1-1': '春节',
+      '1-15': '元宵节',
+      '5-5': '端午节',
+      '8-15': '中秋节',
+      '9-9': '重阳节',
+      '12-8': '腊八节',
+      '12-23': '小年'
+    };
     return festivals[`${month}-${day}`] || null
   }
 
   function getLunarInfo(day) {
     const fd = formatDate(day);
     const lunar = getLunarYearFromSolar(fd.date);
-    if (!lunar) return { date: fd.date, lunarYear: null, lunarMonth: null, lunarDay: null, lunarString: '', lunarFestival: '', dayOfWeek: fd.weekends ? '周末' : '工作日' }
-    
+    if (!lunar)
+      return {
+        date: fd.date,
+        lunarYear: null,
+        lunarMonth: null,
+        lunarDay: null,
+        lunarString: '',
+        lunarFestival: '',
+        dayOfWeek: fd.weekends ? '周末' : '工作日'
+      }
+
     const monthInfo = getLunarMonthAndDay(lunar.daysFromNewYear);
     return {
       date: fd.date,

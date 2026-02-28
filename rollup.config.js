@@ -1,5 +1,4 @@
-import resolve from '@rollup/plugin-node-resolve';
-import terser from '@rollup/plugin-terser';
+import terser from '@rollup/plugin-terser'
 
 export default {
   input: 'src/index.js',
@@ -7,11 +6,11 @@ export default {
     {
       file: 'dist/chinese-workday.cjs.js',
       format: 'cjs',
-      exports: 'named',
+      exports: 'named'
     },
     {
       file: 'dist/chinese-workday.esm.js',
-      format: 'esm',
+      format: 'esm'
     },
     {
       file: 'dist/chinese-workday.umd.js',
@@ -25,8 +24,8 @@ export default {
       file: 'dist/chinese-workday.min.js',
       format: 'umd',
       name: 'chineseWorkday',
-      plugins: [terser()],
-    },
+      plugins: [terser()]
+    }
   ],
-  external: [],
-};
+  external: []
+}

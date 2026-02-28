@@ -18,14 +18,14 @@ npm install chinese-workday
 
 ```js
 // CommonJS
-const { isWorkday, isHoliday, getFestival } = require('chinese-workday');
+const { isWorkday, isHoliday, getFestival } = require('chinese-workday')
 
 // ES Module
-import { isWorkday, isHoliday, getFestival } from 'chinese-workday';
+import { isWorkday, isHoliday, getFestival } from 'chinese-workday'
 
-console.log(isWorkday('2024-10-01')); // false (国庆节)
-console.log(isHoliday('2024-10-01')); // true
-console.log(getFestival('2024-10-01')); // "国庆节"
+console.log(isWorkday('2024-10-01')) // false (国庆节)
+console.log(isHoliday('2024-10-01')) // true
+console.log(getFestival('2024-10-01')) // "国庆节"
 ```
 
 ### 浏览器 / CDN
@@ -33,8 +33,8 @@ console.log(getFestival('2024-10-01')); // "国庆节"
 ```html
 <script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.16.1/dist/chinese-workday.min.js"></script>
 <script>
-  const { isWorkday } = window.chineseWorkday;
-  console.log(isWorkday('2024-10-01')); // false
+  const { isWorkday } = window.chineseWorkday
+  console.log(isWorkday('2024-10-01')) // false
 </script>
 ```
 
@@ -53,66 +53,66 @@ chinese-workday/
 
 ## ⚡ 性能优势
 
-| 特性 | chinese-workday | 竞品平均 |
-|------|----------------|----------|
-| **缓存命中率** | 98.40% | ~70% |
-| **单次查询** | ~40% 更快 | 基准 |
-| **批量查询** | ~60% 更快 | 基准 |
-| **内存占用** | ~30% 更少 | 基准 |
+| 特性           | chinese-workday | 竞品平均 |
+| -------------- | --------------- | -------- |
+| **缓存命中率** | 98.40%          | ~70%     |
+| **单次查询**   | ~40% 更快       | 基准     |
+| **批量查询**   | ~60% 更快       | 基准     |
+| **内存占用**   | ~30% 更少       | 基准     |
 
 ### 批量查询（推荐多日期场景）
 
 ```js
-import { isWorkdayBatch, getFestivalBatch } from 'chinese-workday';
+import { isWorkdayBatch, getFestivalBatch } from 'chinese-workday'
 
-const dates = ['2024-10-01', '2024-10-02', '2024-10-03'];
-const workdayResults = isWorkdayBatch(dates); // [false, false, false]
-const festivalResults = getFestivalBatch(dates); // ["国庆节", "国庆节", "国庆节"]
+const dates = ['2024-10-01', '2024-10-02', '2024-10-03']
+const workdayResults = isWorkdayBatch(dates) // [false, false, false]
+const festivalResults = getFestivalBatch(dates) // ["国庆节", "国庆节", "国庆节"]
 ```
 
 ## 📊 API
 
 ### 基础查询
 
-| 方法 | 说明 |
-|------|------|
-| `isWorkday(date)` | 判断是否为工作日（含调休）|
-| `isHoliday(date)` | 判断是否为节假日 |
-| `getFestival(date)` | 获取节日名称 |
-| `isAddtionalWorkday(date)` | 判断是否为调休工作日 |
-| `isWeekend(date)` | 判断是否为周末 |
+| 方法                       | 说明                       |
+| -------------------------- | -------------------------- |
+| `isWorkday(date)`          | 判断是否为工作日（含调休） |
+| `isHoliday(date)`          | 判断是否为节假日           |
+| `getFestival(date)`        | 获取节日名称               |
+| `isAddtionalWorkday(date)` | 判断是否为调休工作日       |
+| `isWeekend(date)`          | 判断是否为周末             |
 
 ### 批量查询
 
-| 方法 | 说明 |
-|------|------|
-| `isWorkdayBatch(dates)` | 批量判断工作日 |
-| `isHolidayBatch(dates)` | 批量判断节假日 |
+| 方法                      | 说明             |
+| ------------------------- | ---------------- |
+| `isWorkdayBatch(dates)`   | 批量判断工作日   |
+| `isHolidayBatch(dates)`   | 批量判断节假日   |
 | `getFestivalBatch(dates)` | 批量获取节日名称 |
 
 ### 高级功能
 
-| 方法 | 说明 |
-|------|------|
-| `countWorkdays(start, end)` | 计算工作日数量 |
-| `getWorkdaysInRange(start, end)` | 获取所有工作日 |
-| `getHolidaysInRange(start, end)` | 获取所有节假日 |
-| `nextWorkday(date)` | 获取下一个工作日 |
-| `previousWorkday(date)` | 获取上一个工作日 |
+| 方法                             | 说明             |
+| -------------------------------- | ---------------- |
+| `countWorkdays(start, end)`      | 计算工作日数量   |
+| `getWorkdaysInRange(start, end)` | 获取所有工作日   |
+| `getHolidaysInRange(start, end)` | 获取所有节假日   |
+| `nextWorkday(date)`              | 获取下一个工作日 |
+| `previousWorkday(date)`          | 获取上一个工作日 |
 
 ### 其他
 
-| 方法 | 说明 |
-|------|------|
-| `getCacheStats()` | 获取缓存统计 |
-| `addDays(date, days)` | 日期加减 |
+| 方法                  | 说明         |
+| --------------------- | ------------ |
+| `getCacheStats()`     | 获取缓存统计 |
+| `addDays(date, days)` | 日期加减     |
 
 ### 支持的输入格式
 
 ```js
-isWorkday('2024-10-01')        // 字符串
-isWorkday(new Date())          // Date 对象
-isWorkday(1727712000000)       // 时间戳
+isWorkday('2024-10-01') // 字符串
+isWorkday(new Date()) // Date 对象
+isWorkday(1727712000000) // 时间戳
 ```
 
 ## 🎯 使用场景
