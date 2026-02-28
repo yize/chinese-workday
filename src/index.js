@@ -1198,6 +1198,171 @@ function getLunarInfo(day) {
   return result
 }
 
+// ============================================================================
+// Additional Utility Functions (New Features)
+// ============================================================================
+
+/**
+ * Calculate the number of workdays between two dates, excluding the start date
+ * @param {string|Date|number} start Start date
+ * @param {string|Date|number} end End date
+ * @returns {number} Number of workdays between the dates (excluding start date)
+ */
+function getWorkdaysInterval(start, end) {
+  const startDate = formatDate(start).date
+  const endDate = formatDate(end).date
+
+  if (startDate === endDate) return 0
+
+  // Determine direction
+  const startObj = new Date(startDate + 'T00:00:00')
+  const endObj = new Date(endDate + 'T00:00:00')
+
+  if (startObj > endObj) {
+    // Going backwards
+    let count = 0
+    let current = previousWorkday(startDate)
+    while (current && current >= endDate) {
+      count++
+      current = previousWorkday(current)
+    }
+    return count
+  } else {
+    // Going forward
+    let count = 0
+    let current = nextWorkday(startDate)
+    while (current && current <= endDate) {
+      count++
+      current = nextWorkday(current)
+    }
+    return count
+  }
+}
+
+/**
+ * Get the date that is n workdays after the given date
+ * @param {string|Date|number} day Reference date
+ * @param {number} n Number of workdays to add (can be negative)
+ * @returns {string|null} The resulting workday date or null if not found within reasonable range
+ */
+function addWorkdays(day, n) {
+  const startDate = formatDate(day).date
+
+  // If n is 0, return the same date if it's a workday, otherwise next workday
+  if (n === 0) {
+    return isWorkday(startDate) ? startDate : nextWorkday(startDate)
+  }
+
+  let current = startDate
+  let remaining = Math.abs(n)
+
+  if (n > 0) {
+    // Adding workdays
+    while (remaining > 0) {
+      current = nextWorkday(current)
+      if (!current) return null // Could not find next workday within reasonable range
+      remaining--
+    }
+  } else {
+    // Subtracting workdays
+    while (remaining > 0) {
+      current = previousWorkday(current)
+      if (!current) return null // Could not find previous workday within reasonable range
+      remaining--
+    }
+  }
+
+  return current
+}
+
+/**
+ * Generate a sequence of workdays within a range
+ * @param {string|Date|number} start Start date
+ * @param {string|Date|number} end End date
+ * @param {number} interval Interval in workdays (default: 1)
+ * @returns {string[]} Array of workday dates
+ */
+function getWorkdaySequence(start, end, interval = 1) {
+  const startDate = formatDate(start).date
+  const endDate = formatDate(end).date
+  if (startDate > endDate) return []
+
+  const result = []
+  let current = isWorkday(startDate) ? startDate : nextWorkday(startDate)
+
+  while (current && current <= endDate) {
+    result.push(current)
+
+    // Add interval workdays to current to get next date in sequence
+    current = addWorkdays(current, interval)
+    if (!current || current > endDate) break
+  }
+
+  return result
+}
+
+/**
+ * Get annual statistics for workdays and holidays
+ * @param {number} year Year to get statistics for
+ * @returns {Object} Statistics object with workdays, holidays, etc.
+ */
+function getAnnualStats(year) {
+  if (typeof year !== 'number' || year < 2011 || year > 2026) {
+    throw new Error('Year must be between 2011 and 2026')
+  }
+
+  const yearStr = String(year)
+  const startDate = `${yearStr}-01-01`
+  const endDate = `${yearStr}-12-31`
+
+  let totalDays = 0
+  let workdays = 0
+  let holidays = 0
+  let weekends = 0
+  let additionalWorkdays = 0
+  let festivalCounts = {}
+
+  let current = startDate
+  while (current <= endDate) {
+    totalDays++
+
+    if (isWorkday(current)) {
+      workdays++
+      if (isAddtionalWorkday(current)) {
+        additionalWorkdays++
+      }
+    } else {
+      // Count as either holiday or weekend
+      if (HOLIDAYS[current]) {
+        holidays++
+        const festival = HOLIDAYS[current]
+        festivalCounts[festival] = (festivalCounts[festival] || 0) + 1
+      } else {
+        weekends++
+      }
+    }
+
+    // Move to next day
+    const dateObj = new Date(current + 'T00:00:00')
+    dateObj.setDate(dateObj.getDate() + 1)
+    const nextYear = dateObj.getFullYear()
+    const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const nextDate = String(dateObj.getDate()).padStart(2, '0')
+    current = `${nextYear}-${nextMonth}-${nextDate}`
+  }
+
+  return {
+    year,
+    totalDays,
+    workdays,
+    holidays,
+    weekends,
+    additionalWorkdays,
+    workdayPercentage: parseFloat(((workdays / totalDays) * 100).toFixed(2)),
+    holidayDistribution: festivalCounts
+  }
+}
+
 // Export functions (must be at the end after all function definitions)
 export {
   isWorkday,
@@ -1215,5 +1380,10 @@ export {
   nextWorkday,
   previousWorkday,
   isWeekend,
-  getLunarInfo
+  getLunarInfo,
+  // New utility functions
+  getWorkdaysInterval,
+  addWorkdays,
+  getWorkdaySequence,
+  getAnnualStats
 }

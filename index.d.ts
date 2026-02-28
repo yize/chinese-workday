@@ -124,3 +124,53 @@ export function previousWorkday(day: string | Date | number): string | null
  * @returns Lunar calendar info including lunar year, month, day, and festival
  */
 export function getLunarInfo(day: string | Date | number): LunarInfo
+
+// Additional utility functions (v1.4.0+)
+/**
+ * Calculate the number of workdays between two dates, excluding the start date
+ * @param start Start date
+ * @param end End date
+ * @returns Number of workdays between the dates (excluding start date)
+ */
+export function getWorkdaysInterval(
+  start: string | Date | number,
+  end: string | Date | number
+): number
+
+/**
+ * Get the date that is n workdays after the given date
+ * @param day Reference date
+ * @param n Number of workdays to add (can be negative)
+ * @returns The resulting workday date or null if not found within reasonable range
+ */
+export function addWorkdays(day: string | Date | number, n: number): string | null
+
+/**
+ * Generate a sequence of workdays within a range
+ * @param start Start date
+ * @param end End date
+ * @param interval Interval in workdays (default: 1)
+ * @returns Array of workday dates
+ */
+export function getWorkdaySequence(
+  start: string | Date | number,
+  end: string | Date | number,
+  interval?: number
+): string[]
+
+/**
+ * Get annual statistics for workdays and holidays
+ * @param year Year to get statistics for
+ * @returns Statistics object with workdays, holidays, etc.
+ */
+export interface AnnualStats {
+  year: number
+  totalDays: number
+  workdays: number
+  holidays: number
+  weekends: number
+  additionalWorkdays: number
+  workdayPercentage: number
+  holidayDistribution: { [festival: string]: number }
+}
+export function getAnnualStats(year: number): AnnualStats
