@@ -160,7 +160,8 @@ import {
   isWithinOfficeHours,
   setLeaveBalance,
   applyLeave,
-  generateCalendar
+  generateCalendar,
+  isWorkdayInTimezone
 } from 'chinese-workday'
 
 // 节假日临近提醒
@@ -200,6 +201,10 @@ console.log(leaveResult) // { success: true, message: "5 days of annual leave ap
 // 工作日历生成
 const january2024 = generateCalendar(2024, 1, { includeFestival: true, includeLunar: true })
 console.log('January 2024 calendar:', january2024[0]) // First week of January
+
+// 跨时区工作日判断
+const isWorkdayInNY = isWorkdayInTimezone('2024-05-06 10:00:00', 'America/New_York') // 中国标准时间下的工作日，在纽约时区是否为工作日
+const isWorkdayInUTC = isWorkdayInTimezone(Date.now(), 'UTC') // 当前时间在UTC时区是否为工作日
 ```
 
 ### 支持的输入格式

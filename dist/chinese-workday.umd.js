@@ -2313,6 +2313,168 @@
     return result
   }
 
+  // ============================================================================
+  // Time Zone Support Functions (New Features)
+  // ============================================================================
+
+  /**
+   * Check if a date-time in a specific timezone is a workday
+   * @param {string|Date|number} date Date/time to check (can be date string, Date object, or timestamp)
+   * @param {string} timeZone Target timezone (e.g., 'Asia/Shanghai', 'UTC', 'America/New_York')
+   * @returns {boolean} True if it's a workday in the specified timezone
+   */
+  function isWorkdayInTimezone(date, timeZone = 'Asia/Shanghai') {
+    // Format the input date to get the date string in the specified timezone
+    let dateObj;
+
+    if (typeof date === 'string') {
+      // If date is in YYYY-MM-DD format, treat it as start of day in the timezone
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        // Create date in specified timezone - interpret the date string as local to the timezone
+        const [year, month, day] = date.split('-').map(Number);
+        // Create the date in UTC to avoid local timezone interference
+        dateObj = new Date(Date.UTC(year, month - 1, day));
+        // Then get the date components in the target timezone
+        const tzDate = new Date(dateObj.toLocaleString('en-US', { timeZone }));
+        const tzYear = tzDate.getFullYear();
+        const tzMonth = tzDate.getMonth() + 1;
+        const tzDay = tzDate.getDate();
+        const dateStr = `${tzYear}-${String(tzMonth).padStart(2, '0')}-${String(tzDay).padStart(2, '0')}`;
+        return isWorkday(dateStr)
+      } else {
+        // If it's a full datetime string, parse it
+        dateObj = new Date(date);
+      }
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'number') {
+      dateObj = new Date(date);
+    } else {
+      throw new Error('Invalid date format')
+    }
+
+    // Get the date components in the target timezone
+    const options = {
+      timeZone: timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    };
+
+    // Format the date in the target timezone
+    const formatter = new Intl.DateTimeFormat('en-CA', options); // 'en-CA' gives YYYY-MM-DD format
+    const [year, month, day] = formatter.format(dateObj).split('-');
+    const dateStr = `${year}-${month}-${day}`;
+
+    return isWorkday(dateStr)
+  }
+
+  /**
+   * Get the workday status of a timestamp in multiple timezones
+   * @param {number|string|Date} timestamp The timestamp to check
+   * @param {Array<string>} timezones Array of timezone strings to check
+   * @returns {Object} Object with timezone as key and workday status as value
+   */
+  function getWorkdayInMultipleTimezones(timestamp, timezones) {
+    const results = {};
+
+    for (const tz of timezones) {
+      results[tz] = isWorkdayInTimezone(timestamp, tz);
+    }
+
+    return results
+  }
+
+  /**
+   * Convert a date from one timezone to another and check if it's a workday
+   * @param {string|Date|number} date Date to convert
+   * @param {string} fromTimeZone Source timezone
+   * @param {string} toTimeZone Target timezone
+   * @param {boolean} checkWorkday Whether to check if the converted date is a workday in China (default: true)
+   * @returns {Object} Conversion result with date string and workday status
+   */
+  function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWorkday = true) {
+    let dateObj;
+
+    if (typeof date === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        // Handle YYYY-MM-DD format
+        const [year, month, day] = date.split('-').map(Number);
+        // Create a date at noon to avoid DST issues
+        dateObj = new Date(year, month - 1, day, 12, 0, 0);
+      } else {
+        dateObj = new Date(date);
+      }
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'number') {
+      dateObj = new Date(date);
+    } else {
+      throw new Error('Invalid date format')
+    }
+
+    // Get the time in the source timezone
+    const sourceTimeOptions = {
+      timeZone: fromTimeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    };
+
+    // Format the time in the source timezone
+    const sourceFormatter = new Intl.DateTimeFormat('en-CA', sourceTimeOptions);
+    const sourceFormatted = sourceFormatter.formatToParts(dateObj);
+
+    // Extract parts
+    let sourceYear, sourceMonth, sourceDay, sourceHour, sourceMinute, sourceSecond;
+    for (const part of sourceFormatted) {
+      switch (part.type) {
+        case 'year':
+          sourceYear = part.value;
+          break
+        case 'month':
+          sourceMonth = part.value;
+          break
+        case 'day':
+          sourceDay = part.value;
+          break
+        case 'hour':
+          sourceHour = part.value;
+          break
+        case 'minute':
+          sourceMinute = part.value;
+          break
+        case 'second':
+          sourceSecond = part.value;
+          break
+      }
+    }
+
+    // Create a new date from the source time components
+    const sourceDate = new Date(
+      `${sourceYear}-${sourceMonth}-${sourceDay}T${sourceHour}:${sourceMinute}:${sourceSecond}`
+    );
+
+    // Convert to target timezone by getting its components
+    const targetDate = new Date(sourceDate.toLocaleString('en-US', { timeZone: toTimeZone }));
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth() + 1;
+    const targetDay = targetDate.getDate();
+    const targetDateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+
+    return {
+      originalDate: formatDate(date).date,
+      convertedDate: targetDateStr,
+      isWorkdayInChina: checkWorkday ? isWorkday(targetDateStr) : undefined,
+      fromTimezone: fromTimeZone,
+      toTimezone: toTimeZone
+    }
+  }
+
   exports.addLeaveDays = addLeaveDays;
   exports.addWorkdays = addWorkdays;
   exports.applyLeave = applyLeave;
@@ -2320,6 +2482,7 @@
   exports.calculateWorkHours = calculateWorkHours;
   exports.clearCache = clearCache;
   exports.clearWorkSchedule = clearWorkSchedule;
+  exports.convertTimezoneAndCheckWorkday = convertTimezoneAndCheckWorkday;
   exports.countWorkdays = countWorkdays;
   exports.daysUntilHoliday = daysUntilHoliday;
   exports.generateCalendar = generateCalendar;
@@ -2342,6 +2505,7 @@
   exports.getTotalDays = getTotalDays;
   exports.getWeekRange = getWeekRange;
   exports.getWorkSchedule = getWorkSchedule;
+  exports.getWorkdayInMultipleTimezones = getWorkdayInMultipleTimezones;
   exports.getWorkdayRatio = getWorkdayRatio;
   exports.getWorkdaySequence = getWorkdaySequence;
   exports.getWorkdaysInRange = getWorkdaysInRange;
@@ -2356,6 +2520,7 @@
   exports.isWorkday = isWorkday;
   exports.isWorkdayBatch = isWorkdayBatch;
   exports.isWorkdayCustom = isWorkdayCustom;
+  exports.isWorkdayInTimezone = isWorkdayInTimezone;
   exports.nextWorkday = nextWorkday;
   exports.previousWorkday = previousWorkday;
   exports.setLeaveBalance = setLeaveBalance;

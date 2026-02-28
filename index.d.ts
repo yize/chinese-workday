@@ -358,3 +358,25 @@ export function getDaysInMonth(
   month: number,
   type?: 'workdays' | 'holidays' | 'weekends' | 'all'
 ): string[]
+
+// Time zone support functions (v2.1.0+)
+export function isWorkdayInTimezone(date: string | Date | number, timeZone?: string): boolean
+
+export function getWorkdayInMultipleTimezones(
+  timestamp: number | string | Date,
+  timezones: string[]
+): { [timezone: string]: boolean }
+
+export interface TimezoneConversionResult {
+  originalDate: string
+  convertedDate: string
+  isWorkdayInChina: boolean | undefined
+  fromTimezone: string
+  toTimezone: string
+}
+export function convertTimezoneAndCheckWorkday(
+  date: string | Date | number,
+  fromTimezone: string,
+  toTimezone: string,
+  checkWorkday?: boolean
+): TimezoneConversionResult

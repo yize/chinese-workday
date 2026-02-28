@@ -11,6 +11,7 @@
 - [工作时间相关](#工作时间相关功能)
 - [假期管理](#假期管理功能)
 - [工作日历](#工作日历相关功能)
+- [时区支持](#时区支持功能)
 
 ---
 
@@ -634,6 +635,137 @@ const calendar = generateCalendar(2024, 1) // 生成2024年1月日历
 
 **返回:** `Array<string>` - 日期字符串数组
 
+## 时区支持功能
+
+### isWorkdayInTimezone(date, timeZone)
+
+检查指定时区的日期是否为工作日
+
+**参数:**
+
+- `date` (string | Date | number): 日期/时间
+- `timeZone` (string): 时区 (默认 'Asia/Shanghai')
+
+**返回:** `boolean` - 是否为工作日
+
+**示例:**
+
+```js
+import { isWorkdayInTimezone } from 'chinese-workday'
+const isWorkday = isWorkdayInTimezone('2024-05-06', 'Asia/Shanghai') // 根据中国时区判断
+const isWorkdayInNY = isWorkdayInTimezone('2024-05-06 10:00:00', 'America/New_York') // 根据纽约时区判断
+```
+
+### getWorkdayInMultipleTimezones(timestamp, timezones)
+
+获取时间戳在多个时区的工作日状态
+
+**参数:**
+
+- `timestamp` (number | string | Date): 时间戳
+- `timezones` (Array<string>): 时区数组
+
+**返回:** `{[timezone: string]: boolean}` - 以时区为键、工作日状态为值的对象
+
+### convertTimezoneAndCheckWorkday(date, fromTimezone, toTimezone, checkWorkday)
+
+将日期从一个时区转换到另一个时区并检查是否为工作日
+
+**参数:**
+
+- `date` (string | Date | number): 要转换的日期
+- `fromTimezone` (string): 源时区
+- `toTimezone` (string): 目标时区
+- `checkWorkday` (boolean): 是否检查转换后的日期在中国是否为工作日 (默认 true)
+
+**返回:** `TimezoneConversionResult` - 转换结果对象
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+- `options` (Object): 可选参数
+  - `startDay` (number): 每周从哪天开始 (0=周日, 1=周一, 默认1)
+  - `includeFestival` (boolean): 是否包含节日信息 (默认true)
+  - `includeLunar` (boolean): 是否包含农历信息 (默认false)
+
+**返回:** `Array<Array<CalendarDay>>` - 日历矩阵（周的数组，每周包含7天）
+
+**示例:**
+
+```js
+import { generateCalendar } from 'chinese-workday'
+const calendar = generateCalendar(2024, 1) // 生成2024年1月日历
+```
+
+### generateCompactCalendar(year, month)
+
+生成紧凑格式的日历视图和统计信息
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+
+**返回:** `CompactCalendar` - 包含日历和统计信息的对象
+
+### getDaysInMonth(year, month, type)
+
+获取月份中特定类型的日期
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+- `type` (string): 日期类型 ('workdays', 'holidays', 'weekends', 'all') 默认 'workdays'
+
+**返回:** `Array<string>` - 日期字符串数组
+
+## 时区支持功能
+
+### isWorkdayInTimezone(date, timeZone)
+
+检查指定时区的日期是否为工作日
+
+**参数:**
+
+- `date` (string | Date | number): 日期/时间
+- `timeZone` (string): 时区 (默认 'Asia/Shanghai')
+
+**返回:** `boolean` - 是否为工作日
+
+**示例:**
+
+```js
+import { isWorkdayInTimezone } from 'chinese-workday'
+const isWorkday = isWorkdayInTimezone('2024-05-06', 'Asia/Shanghai') // 根据中国时区判断
+const isWorkdayInNY = isWorkdayInTimezone('2024-05-06 10:00:00', 'America/New_York') // 根据纽约时区判断
+```
+
+### getWorkdayInMultipleTimezones(timestamp, timezones)
+
+获取时间戳在多个时区的工作日状态
+
+**参数:**
+
+- `timestamp` (number | string | Date): 时间戳
+- `timezones` (Array<string>): 时区数组
+
+**返回:** `{[timezone: string]: boolean}` - 以时区为键、工作日状态为值的对象
+
+### convertTimezoneAndCheckWorkday(date, fromTimezone, toTimezone, checkWorkday)
+
+将日期从一个时区转换到另一个时区并检查是否为工作日
+
+**参数:**
+
+- `date` (string | Date | number): 要转换的日期
+- `fromTimezone` (string): 源时区
+- `toTimezone` (string): 目标时区
+- `checkWorkday` (boolean): 是否检查转换后的日期在中国是否为工作日 (默认 true)
+
+**返回:** `TimezoneConversionResult` - 转换结果对象
+
 ## 类型定义
 
 ### AnnualStats
@@ -746,7 +878,7 @@ interface CalendarOptions {
 
 ### CompactCalendar
 
-```ts
+````ts
 interface CompactCalendar {
   year: number
   month: number
@@ -758,4 +890,14 @@ interface CompactCalendar {
     total: number
   }
 }
-```
+
+### TimezoneConversionResult
+```ts
+interface TimezoneConversionResult {
+  originalDate: string
+  convertedDate: string
+  isWorkdayInChina: boolean | undefined
+  fromTimezone: string
+  toTimezone: string
+}
+````
