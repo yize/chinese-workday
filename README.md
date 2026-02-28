@@ -157,7 +157,10 @@ import {
   getNextHoliday,
   getWorkdayRatio,
   setWorkSchedule,
-  isWithinOfficeHours
+  isWithinOfficeHours,
+  setLeaveBalance,
+  applyLeave,
+  generateCalendar
 } from 'chinese-workday'
 
 // 节假日临近提醒
@@ -183,6 +186,20 @@ const inOffice = isWithinOfficeHours(now, {
   startDay: 1,
   endDay: 6 // 周一到周六
 })
+
+// 假期余额管理
+setLeaveBalance('employee_001', {
+  annual: 15, // 年假15天
+  sick: 10, // 病假10天
+  personal: 3 // 事假3天
+})
+
+const leaveResult = applyLeave('employee_001', 'annual', '2024-06-03', '2024-06-07') // 申请5天年假
+console.log(leaveResult) // { success: true, message: "5 days of annual leave applied...", remainingBalance: {...} }
+
+// 工作日历生成
+const january2024 = generateCalendar(2024, 1, { includeFestival: true, includeLunar: true })
+console.log('January 2024 calendar:', january2024[0]) // First week of January
 ```
 
 ### 支持的输入格式

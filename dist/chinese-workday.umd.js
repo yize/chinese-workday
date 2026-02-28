@@ -1914,20 +1914,426 @@
     return true
   }
 
+  // ============================================================================
+  // Leave Management Functions (New Features)
+  // ============================================================================
+
+  // Store user leave balances
+  let leaveBalances = {};
+
+  /**
+   * Set initial leave balance for a user
+   * @param {string} userId User identifier
+   * @param {Object} balances Leave balances object
+   * @param {number} balances.annual Annual leave days
+   * @param {number} balances.sick Sick leave days
+   * @param {number} balances.personal Personal leave days
+   * @param {number} balances.marriage Marriage leave days
+   * @param {number} balances.maternity Maternity leave days
+   * @param {number} balances.paternity Paternity leave days
+   * @param {Object} balances.custom Custom leave types and balances
+   */
+  function setLeaveBalance(userId, balances) {
+    const defaultBalances = {
+      annual: 0,
+      sick: 0,
+      personal: 0,
+      marriage: 0,
+      maternity: 0,
+      paternity: 0,
+      custom: {}
+    };
+
+    leaveBalances[userId] = { ...defaultBalances, ...balances };
+  }
+
+  /**
+   * Get leave balance for a user
+   * @param {string} userId User identifier
+   * @returns {Object} Leave balances object
+   */
+  function getLeaveBalance(userId) {
+    return leaveBalances[userId] || null
+  }
+
+  /**
+   * Apply for leave and update balance
+   * @param {string} userId User identifier
+   * @param {string} leaveType Type of leave ('annual', 'sick', 'personal', etc.)
+   * @param {string|Date|number} startDate Start date of leave
+   * @param {string|Date|number} endDate End date of leave
+   * @param {boolean} includeWorkdays Whether to include workdays in calculation (default: true)
+   * @returns {Object} Result object with success status and message
+   */
+  function applyLeave(userId, leaveType, startDate, endDate, includeWorkdays = true) {
+    const userBalance = leaveBalances[userId];
+    if (!userBalance) {
+      return { success: false, message: 'User not found', remainingBalance: null }
+    }
+
+    // Calculate leave days based on type
+    let leaveDays;
+    if (includeWorkdays) {
+      leaveDays = countWorkdays(startDate, endDate);
+    } else {
+      leaveDays = getTotalDays(startDate, endDate);
+    }
+
+    // Check if it's a custom leave type or predefined type
+    if (leaveType === 'custom') {
+      return {
+        success: false,
+        message: 'For custom leave, specify the exact custom type',
+        remainingBalance: userBalance
+      }
+    } else if (userBalance.hasOwnProperty(leaveType)) {
+      if (userBalance[leaveType] < leaveDays) {
+        return {
+          success: false,
+          message: `Insufficient ${leaveType} leave balance`,
+          remainingBalance: userBalance
+        }
+      }
+
+      // Deduct leave days from balance
+      userBalance[leaveType] -= leaveDays;
+
+      return {
+        success: true,
+        message: `${leaveDays} days of ${leaveType} leave applied successfully`,
+        leaveDays: leaveDays,
+        remainingBalance: { ...userBalance }
+      }
+    } else {
+      return {
+        success: false,
+        message: `Unknown leave type: ${leaveType}`,
+        remainingBalance: userBalance
+      }
+    }
+  }
+
+  /**
+   * Add leave days to user balance
+   * @param {string} userId User identifier
+   * @param {string} leaveType Type of leave
+   * @param {number|Object} days Days to add (for custom leave types, pass an object)
+   * @returns {Object} Result object
+   */
+  function addLeaveDays(userId, leaveType, days) {
+    const userBalance = leaveBalances[userId];
+    if (!userBalance) {
+      return { success: false, message: 'User not found', remainingBalance: null }
+    }
+
+    if (userBalance.hasOwnProperty(leaveType)) {
+      // Add to predefined leave type
+      userBalance[leaveType] = (userBalance[leaveType] || 0) + days;
+
+      return {
+        success: true,
+        message: `${days} days added to ${leaveType} leave`,
+        remainingBalance: { ...userBalance }
+      }
+    } else if (leaveType === 'custom' && typeof days === 'object') {
+      // For custom leaves, days is an object with leave type and value
+      for (const [customType, customDays] of Object.entries(days)) {
+        userBalance.custom[customType] = (userBalance.custom[customType] || 0) + customDays;
+      }
+
+      return {
+        success: true,
+        message: 'Custom leave days added',
+        remainingBalance: { ...userBalance }
+      }
+    } else if (typeof days === 'number' && leaveType.startsWith('custom_')) {
+      // For specific custom leave type like 'custom_study', 'custom_emergency', etc.
+      userBalance.custom[leaveType.substring(7)] =
+        (userBalance.custom[leaveType.substring(7)] || 0) + days;
+
+      return {
+        success: true,
+        message: `${days} days added to custom ${leaveType.substring(7)} leave`,
+        remainingBalance: { ...userBalance }
+      }
+    } else {
+      return {
+        success: false,
+        message: `Unknown leave type: ${leaveType}`,
+        remainingBalance: userBalance
+      }
+    }
+  }
+
+  /**
+   * Calculate actual working days in a period excluding approved leaves
+   * @param {string|Date|number} startDate Start date
+   * @param {string|Date|number} endDate End date
+   * @param {Array} leaveRecords Array of leave records with startDate, endDate, and type
+   * @returns {number} Number of actual working days after excluding approved leaves
+   */
+  function calculateActualWorkdays(startDate, endDate, leaveRecords = []) {
+    // First calculate total workdays in the range
+    const totalWorkdays = countWorkdays(startDate, endDate);
+
+    // Calculate workdays during leave periods
+    let totalLeaveWorkdays = 0;
+    for (const leave of leaveRecords) {
+      if (leave.approved) {
+        // Only count approved leaves
+        // Find the intersection of leave period and the given range
+        const leaveStart = formatDate(leave.startDate).date;
+        const leaveEnd = formatDate(leave.endDate).date;
+        const rangeStart = formatDate(startDate).date;
+        const rangeEnd = formatDate(endDate).date;
+
+        // Calculate intersection
+        const intersectStart = leaveStart > rangeStart ? leaveStart : rangeStart;
+        const intersectEnd = leaveEnd < rangeEnd ? leaveEnd : rangeEnd;
+
+        if (intersectStart <= intersectEnd) {
+          totalLeaveWorkdays += countWorkdays(intersectStart, intersectEnd);
+        }
+      }
+    }
+
+    return Math.max(0, totalWorkdays - totalLeaveWorkdays)
+  }
+
+  // ============================================================================
+  // Calendar Generation Functions (New Features)
+  // ============================================================================
+
+  /**
+   * Generate a calendar view for a specific month
+   * @param {number} year Year
+   * @param {number} month Month (1-12)
+   * @param {Object} options Optional settings
+   * @param {number} options.startDay Which day the week starts (0=Sunday, 1=Monday, default: 1)
+   * @param {boolean} options.includeFestival Whether to include festival names (default: true)
+   * @param {boolean} options.includeLunar Whether to include lunar calendar (default: false)
+   * @returns {Array<Array<Object>>} Calendar matrix (rows of weeks, each week has 7 days)
+   */
+  function generateCalendar(year, month, options = {}) {
+    const {
+      startDay = 1, // Monday
+      includeFestival = true,
+      includeLunar = false
+    } = options;
+
+    // Create date for first day of month
+    const firstDay = new Date(year, month - 1, 1);
+    // Create date for last day of month
+    const lastDay = new Date(year, month, 0);
+    const daysInMonth = lastDay.getDate();
+
+    // Determine what day of week the month starts on
+    const monthStartDay = firstDay.getDay(); // 0=Sunday, 1=Monday, etc.
+    // Calculate how many days to show from previous month
+    const prevMonthOffset = (monthStartDay - startDay + 7) % 7;
+
+    // Create the calendar matrix
+    const calendar = [];
+    let week = [];
+
+    // Add days from previous month
+    const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+    for (let i = 0; i < prevMonthOffset; i++) {
+      const dayNum = prevMonthLastDay - prevMonthOffset + i + 1;
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+
+      const dayInfo = {
+        year: prevYear,
+        month: prevMonth,
+        date: dayNum,
+        dayType: 'prevMonth',
+        isWorkday: isWorkday(dateStr),
+        dateStr: dateStr
+      };
+
+      if (includeFestival) {
+        dayInfo.festival = getFestival(dateStr);
+      }
+
+      if (includeLunar) {
+        const lunarInfo = getLunarInfo(dateStr);
+        dayInfo.lunar = lunarInfo.lunarString;
+      }
+
+      week.push(dayInfo);
+    }
+
+    // Add days from current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      const dayInfo = {
+        year: year,
+        month: month,
+        date: day,
+        dayType: 'currentMonth',
+        isWorkday: isWorkday(dateStr),
+        dateStr: dateStr
+      };
+
+      if (includeFestival) {
+        dayInfo.festival = getFestival(dateStr);
+      }
+
+      if (includeLunar) {
+        const lunarInfo = getLunarInfo(dateStr);
+        dayInfo.lunar = lunarInfo.lunarString;
+      }
+
+      week.push(dayInfo);
+
+      // If week is full (7 days), add it to calendar and start a new week
+      if (week.length === 7) {
+        calendar.push(week);
+        week = [];
+      }
+    }
+
+    // Add days from next month to fill the last week
+    const remainingDays = 7 - week.length;
+    for (let i = 0; i < remainingDays; i++) {
+      const dayNum = i + 1;
+      const nextMonth = month === 12 ? 1 : month + 1;
+      const nextYear = month === 12 ? year + 1 : year;
+      const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+
+      const dayInfo = {
+        year: nextYear,
+        month: nextMonth,
+        date: dayNum,
+        dayType: 'nextMonth',
+        isWorkday: isWorkday(dateStr),
+        dateStr: dateStr
+      };
+
+      if (includeFestival) {
+        dayInfo.festival = getFestival(dateStr);
+      }
+
+      if (includeLunar) {
+        const lunarInfo = getLunarInfo(dateStr);
+        dayInfo.lunar = lunarInfo.lunarString;
+      }
+
+      week.push(dayInfo);
+    }
+
+    // Add the final week if it has any days
+    if (week.length > 0) {
+      calendar.push(week);
+    }
+
+    return calendar
+  }
+
+  /**
+   * Generate a compact calendar view for a month with workday indicators
+   * @param {number} year Year
+   * @param {number} month Month (1-12)
+   * @returns {Object} Compact calendar with metadata
+   */
+  function generateCompactCalendar(year, month) {
+    const calendar = generateCalendar(year, month);
+
+    // Calculate summary statistics
+    let workdays = 0;
+    let holidays = 0;
+    let weekends = 0;
+
+    for (const week of calendar) {
+      for (const day of week) {
+        if (day.dayType === 'currentMonth') {
+          if (day.isWorkday) {
+            workdays++;
+          } else {
+            // Check if it's a holiday or weekend
+            if (HOLIDAYS[day.dateStr]) {
+              holidays++;
+            } else {
+              weekends++;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      year,
+      month,
+      calendar,
+      stats: {
+        workdays,
+        holidays,
+        weekends,
+        total: workdays + holidays + weekends
+      }
+    }
+  }
+
+  /**
+   * Get all workdays or holidays in a month
+   * @param {number} year Year
+   * @param {number} month Month (1-12)
+   * @param {string} type Type of days to return ('workdays', 'holidays', 'weekends', 'all')
+   * @returns {Array} Array of date strings
+   */
+  function getDaysInMonth(year, month, type = 'workdays') {
+    const result = [];
+    // Create date for last day of month
+    const lastDay = new Date(year, month, 0);
+    const daysInMonth = lastDay.getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      let include = false;
+      if (type === 'workdays') {
+        include = isWorkday(dateStr);
+      } else if (type === 'holidays') {
+        include = !isWorkday(dateStr) && HOLIDAYS[dateStr];
+      } else if (type === 'weekends') {
+        include = !isWorkday(dateStr) && !HOLIDAYS[dateStr];
+      } else {
+        // all
+        include = true;
+      }
+
+      if (include) {
+        result.push(dateStr);
+      }
+    }
+
+    return result
+  }
+
+  exports.addLeaveDays = addLeaveDays;
   exports.addWorkdays = addWorkdays;
+  exports.applyLeave = applyLeave;
+  exports.calculateActualWorkdays = calculateActualWorkdays;
   exports.calculateWorkHours = calculateWorkHours;
   exports.clearCache = clearCache;
   exports.clearWorkSchedule = clearWorkSchedule;
   exports.countWorkdays = countWorkdays;
   exports.daysUntilHoliday = daysUntilHoliday;
+  exports.generateCalendar = generateCalendar;
+  exports.generateCompactCalendar = generateCompactCalendar;
   exports.getAnnualStats = getAnnualStats;
   exports.getAvailableSchedules = getAvailableSchedules;
   exports.getCacheStats = getCacheStats;
   exports.getConsecutiveHolidays = getConsecutiveHolidays;
+  exports.getDaysInMonth = getDaysInMonth;
   exports.getFestival = getFestival;
   exports.getFestivalBatch = getFestivalBatch;
   exports.getHolidaysByFestival = getHolidaysByFestival;
   exports.getHolidaysInRange = getHolidaysInRange;
+  exports.getLeaveBalance = getLeaveBalance;
   exports.getLunarInfo = getLunarInfo;
   exports.getMonthRange = getMonthRange;
   exports.getMonthlyStats = getMonthlyStats;
@@ -1952,6 +2358,7 @@
   exports.isWorkdayCustom = isWorkdayCustom;
   exports.nextWorkday = nextWorkday;
   exports.previousWorkday = previousWorkday;
+  exports.setLeaveBalance = setLeaveBalance;
   exports.setWorkSchedule = setWorkSchedule;
 
 }));

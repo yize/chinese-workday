@@ -9,6 +9,8 @@
 - [自定义工作安排](#自定义工作安排)
 - [高级统计](#高级统计功能)
 - [工作时间相关](#工作时间相关功能)
+- [假期管理](#假期管理功能)
+- [工作日历](#工作日历相关功能)
 
 ---
 
@@ -105,8 +107,6 @@ isWeekend('2024-01-06') // true (周六)
 isWeekend('2024-01-01') // false (虽然是节假日，但不是周末)
 ```
 
----
-
 ## 批量查询
 
 ### isWorkdayBatch(days)
@@ -146,8 +146,6 @@ const results = isWorkdayBatch(dates) // [false, false, false]
 - `days` (Array<string | Date | number>): 日期数组
 
 **返回:** `Array<string>` - 对应的节日名称
-
----
 
 ## 高级功能
 
@@ -269,8 +267,6 @@ nextWorkday('2024-10-01') // '2024-10-08' (国庆假期后首个工作日)
 
 **返回:** `AnnualStats` - 统计数据对象
 
----
-
 ## 节假日提醒功能
 
 ### getNextHoliday(day)
@@ -328,8 +324,6 @@ isHolidayApproaching('2024-09-28', 3) // true (国庆节前3天)
 - `day` (string | Date | number): 参考日期
 
 **返回:** `number` - 连续节假日天数，0表示该日期不是节假日
-
----
 
 ## 自定义工作安排
 
@@ -402,8 +396,6 @@ setWorkSchedule('my_company', {
 
 **返回:** `Array<string>` - 安排ID数组
 
----
-
 ## 高级统计功能
 
 ### getMonthlyStats(year, month)
@@ -448,8 +440,6 @@ setWorkSchedule('my_company', {
 - `end` (string | Date | number): 结束日期
 
 **返回:** `{[festival: string]: string[]}` - 以节日名称为键、日期数组为值的对象
-
----
 
 ## 工作时间相关功能
 
@@ -532,7 +522,117 @@ const inOffice = isWithinOfficeHours(now, {
 })
 ```
 
----
+## 假期管理功能
+
+### setLeaveBalance(userId, balances)
+
+设置用户假期余额
+
+**参数:**
+
+- `userId` (string): 用户ID
+- `balances` (Object): 假期余额对象
+  - `annual` (number): 年假天数
+  - `sick` (number): 病假天数
+  - `personal` (number): 事假天数
+  - `marriage` (number): 婚假天数
+  - `maternity` (number): 产假天数
+  - `paternity` (number): 陪产假天数
+  - `custom` (Object): 自定义假期类型
+
+**示例:**
+
+```js
+import { setLeaveBalance } from 'chinese-workday'
+setLeaveBalance('emp001', {
+  annual: 15,
+  sick: 10,
+  personal: 3
+})
+```
+
+### getLeaveBalance(userId)
+
+获取用户假期余额
+
+**参数:**
+
+- `userId` (string): 用户ID
+
+**返回:** `LeaveBalances` - 假期余额对象
+
+### applyLeave(userId, leaveType, startDate, endDate, includeWorkdays)
+
+申请假期并更新余额
+
+**参数:**
+
+- `userId` (string): 用户ID
+- `leaveType` (string): 假期类型
+- `startDate` (string | Date | number): 开始日期
+- `endDate` (string | Date | number): 结束日期
+- `includeWorkdays` (boolean): 是否只计算工作日（默认true）
+
+**返回:** `LeaveApplicationResult` - 申请结果
+
+### calculateActualWorkdays(startDate, endDate, leaveRecords)
+
+计算扣除已批准假期的实际工作天数
+
+**参数:**
+
+- `startDate` (string | Date | number): 开始日期
+- `endDate` (string | Date | number): 结束日期
+- `leaveRecords` (Array): 假期记录数组
+
+**返回:** `number` - 实际工作天数
+
+## 工作日历相关功能
+
+### generateCalendar(year, month, options)
+
+生成指定年月的日历视图
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+- `options` (Object): 可选参数
+  - `startDay` (number): 每周从哪天开始 (0=周日, 1=周一, 默认1)
+  - `includeFestival` (boolean): 是否包含节日信息 (默认true)
+  - `includeLunar` (boolean): 是否包含农历信息 (默认false)
+
+**返回:** `Array<Array<CalendarDay>>` - 日历矩阵（周的数组，每周包含7天）
+
+**示例:**
+
+```js
+import { generateCalendar } from 'chinese-workday'
+const calendar = generateCalendar(2024, 1) // 生成2024年1月日历
+```
+
+### generateCompactCalendar(year, month)
+
+生成紧凑格式的日历视图和统计信息
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+
+**返回:** `CompactCalendar` - 包含日历和统计信息的对象
+
+### getDaysInMonth(year, month, type)
+
+获取月份中特定类型的日期
+
+**参数:**
+
+- `year` (number): 年份
+- `month` (number): 月份 (1-12)
+- `type` (string): 日期类型 ('workdays', 'holidays', 'weekends', 'all') 默认 'workdays'
+
+**返回:** `Array<string>` - 日期字符串数组
 
 ## 类型定义
 
@@ -602,5 +702,60 @@ interface OfficeHoursOptions {
   endHour?: number
   startDay?: number
   endDay?: number
+}
+```
+
+### LeaveBalances
+
+```ts
+interface LeaveBalances {
+  annual: number
+  sick: number
+  personal: number
+  marriage: number
+  maternity: number
+  paternity: number
+  custom: { [type: string]: number }
+}
+```
+
+### CalendarDay
+
+```ts
+interface CalendarDay {
+  year: number
+  month: number
+  date: number
+  dayType: 'prevMonth' | 'currentMonth' | 'nextMonth'
+  isWorkday: boolean
+  dateStr: string
+  festival?: string
+  lunar?: string
+}
+```
+
+### CalendarOptions
+
+```ts
+interface CalendarOptions {
+  startDay?: number
+  includeFestival?: boolean
+  includeLunar?: boolean
+}
+```
+
+### CompactCalendar
+
+```ts
+interface CompactCalendar {
+  year: number
+  month: number
+  calendar: CalendarDay[][]
+  stats: {
+    workdays: number
+    holidays: number
+    weekends: number
+    total: number
+  }
 }
 ```

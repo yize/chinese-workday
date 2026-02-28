@@ -315,3 +315,46 @@ export function calculateActualWorkdays(
   endDate: string | Date | number,
   leaveRecords?: LeaveRecord[]
 ): number
+
+// Calendar generation functions (v2.0.0+)
+export interface CalendarDay {
+  year: number
+  month: number
+  date: number
+  dayType: 'prevMonth' | 'currentMonth' | 'nextMonth'
+  isWorkday: boolean
+  dateStr: string
+  festival?: string
+  lunar?: string
+}
+
+export interface CalendarOptions {
+  startDay?: number
+  includeFestival?: boolean
+  includeLunar?: boolean
+}
+
+export function generateCalendar(
+  year: number,
+  month: number,
+  options?: CalendarOptions
+): CalendarDay[][]
+
+export interface CompactCalendar {
+  year: number
+  month: number
+  calendar: CalendarDay[][]
+  stats: {
+    workdays: number
+    holidays: number
+    weekends: number
+    total: number
+  }
+}
+export function generateCompactCalendar(year: number, month: number): CompactCalendar
+
+export function getDaysInMonth(
+  year: number,
+  month: number,
+  type?: 'workdays' | 'holidays' | 'weekends' | 'all'
+): string[]

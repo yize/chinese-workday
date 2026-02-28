@@ -2095,6 +2095,222 @@ function calculateActualWorkdays(startDate, endDate, leaveRecords = []) {
   return Math.max(0, totalWorkdays - totalLeaveWorkdays)
 }
 
+// ============================================================================
+// Calendar Generation Functions (New Features)
+// ============================================================================
+
+/**
+ * Generate a calendar view for a specific month
+ * @param {number} year Year
+ * @param {number} month Month (1-12)
+ * @param {Object} options Optional settings
+ * @param {number} options.startDay Which day the week starts (0=Sunday, 1=Monday, default: 1)
+ * @param {boolean} options.includeFestival Whether to include festival names (default: true)
+ * @param {boolean} options.includeLunar Whether to include lunar calendar (default: false)
+ * @returns {Array<Array<Object>>} Calendar matrix (rows of weeks, each week has 7 days)
+ */
+function generateCalendar(year, month, options = {}) {
+  const {
+    startDay = 1, // Monday
+    includeFestival = true,
+    includeLunar = false
+  } = options
+
+  // Create date for first day of month
+  const firstDay = new Date(year, month - 1, 1)
+  // Create date for last day of month
+  const lastDay = new Date(year, month, 0)
+  const daysInMonth = lastDay.getDate()
+
+  // Determine what day of week the month starts on
+  const monthStartDay = firstDay.getDay() // 0=Sunday, 1=Monday, etc.
+  // Calculate how many days to show from previous month
+  const prevMonthOffset = (monthStartDay - startDay + 7) % 7
+
+  // Create the calendar matrix
+  const calendar = []
+  let week = []
+
+  // Add days from previous month
+  const prevMonthLastDay = new Date(year, month - 1, 0).getDate()
+  for (let i = 0; i < prevMonthOffset; i++) {
+    const dayNum = prevMonthLastDay - prevMonthOffset + i + 1
+    const prevMonth = month === 1 ? 12 : month - 1
+    const prevYear = month === 1 ? year - 1 : year
+    const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+
+    const dayInfo = {
+      year: prevYear,
+      month: prevMonth,
+      date: dayNum,
+      dayType: 'prevMonth',
+      isWorkday: isWorkday(dateStr),
+      dateStr: dateStr
+    }
+
+    if (includeFestival) {
+      dayInfo.festival = getFestival(dateStr)
+    }
+
+    if (includeLunar) {
+      const lunarInfo = getLunarInfo(dateStr)
+      dayInfo.lunar = lunarInfo.lunarString
+    }
+
+    week.push(dayInfo)
+  }
+
+  // Add days from current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+    const dayInfo = {
+      year: year,
+      month: month,
+      date: day,
+      dayType: 'currentMonth',
+      isWorkday: isWorkday(dateStr),
+      dateStr: dateStr
+    }
+
+    if (includeFestival) {
+      dayInfo.festival = getFestival(dateStr)
+    }
+
+    if (includeLunar) {
+      const lunarInfo = getLunarInfo(dateStr)
+      dayInfo.lunar = lunarInfo.lunarString
+    }
+
+    week.push(dayInfo)
+
+    // If week is full (7 days), add it to calendar and start a new week
+    if (week.length === 7) {
+      calendar.push(week)
+      week = []
+    }
+  }
+
+  // Add days from next month to fill the last week
+  const remainingDays = 7 - week.length
+  for (let i = 0; i < remainingDays; i++) {
+    const dayNum = i + 1
+    const nextMonth = month === 12 ? 1 : month + 1
+    const nextYear = month === 12 ? year + 1 : year
+    const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+
+    const dayInfo = {
+      year: nextYear,
+      month: nextMonth,
+      date: dayNum,
+      dayType: 'nextMonth',
+      isWorkday: isWorkday(dateStr),
+      dateStr: dateStr
+    }
+
+    if (includeFestival) {
+      dayInfo.festival = getFestival(dateStr)
+    }
+
+    if (includeLunar) {
+      const lunarInfo = getLunarInfo(dateStr)
+      dayInfo.lunar = lunarInfo.lunarString
+    }
+
+    week.push(dayInfo)
+  }
+
+  // Add the final week if it has any days
+  if (week.length > 0) {
+    calendar.push(week)
+  }
+
+  return calendar
+}
+
+/**
+ * Generate a compact calendar view for a month with workday indicators
+ * @param {number} year Year
+ * @param {number} month Month (1-12)
+ * @returns {Object} Compact calendar with metadata
+ */
+function generateCompactCalendar(year, month) {
+  const calendar = generateCalendar(year, month)
+
+  // Calculate summary statistics
+  let workdays = 0
+  let holidays = 0
+  let weekends = 0
+
+  for (const week of calendar) {
+    for (const day of week) {
+      if (day.dayType === 'currentMonth') {
+        if (day.isWorkday) {
+          workdays++
+        } else {
+          // Check if it's a holiday or weekend
+          if (HOLIDAYS[day.dateStr]) {
+            holidays++
+          } else {
+            weekends++
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    year,
+    month,
+    calendar,
+    stats: {
+      workdays,
+      holidays,
+      weekends,
+      total: workdays + holidays + weekends
+    }
+  }
+}
+
+/**
+ * Get all workdays or holidays in a month
+ * @param {number} year Year
+ * @param {number} month Month (1-12)
+ * @param {string} type Type of days to return ('workdays', 'holidays', 'weekends', 'all')
+ * @returns {Array} Array of date strings
+ */
+function getDaysInMonth(year, month, type = 'workdays') {
+  const result = []
+
+  // Create date for first day of month
+  const firstDay = new Date(year, month - 1, 1)
+  // Create date for last day of month
+  const lastDay = new Date(year, month, 0)
+  const daysInMonth = lastDay.getDate()
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+    let include = false
+    if (type === 'workdays') {
+      include = isWorkday(dateStr)
+    } else if (type === 'holidays') {
+      include = !isWorkday(dateStr) && HOLIDAYS[dateStr]
+    } else if (type === 'weekends') {
+      include = !isWorkday(dateStr) && !HOLIDAYS[dateStr]
+    } else {
+      // all
+      include = true
+    }
+
+    if (include) {
+      result.push(dateStr)
+    }
+  }
+
+  return result
+}
+
 // Export functions (must be at the end after all function definitions)
 export {
   isWorkday,
@@ -2146,5 +2362,9 @@ export {
   getLeaveBalance,
   applyLeave,
   addLeaveDays,
-  calculateActualWorkdays
+  calculateActualWorkdays,
+  // Calendar generation functions added in v2.0.0
+  generateCalendar,
+  generateCompactCalendar,
+  getDaysInMonth
 }
