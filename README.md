@@ -92,20 +92,98 @@ const festivalResults = getFestivalBatch(dates) // ["国庆节", "国庆节", "�
 
 ### 高级功能
 
-| 方法                             | 说明             |
-| -------------------------------- | ---------------- |
-| `countWorkdays(start, end)`      | 计算工作日数量   |
-| `getWorkdaysInRange(start, end)` | 获取所有工作日   |
-| `getHolidaysInRange(start, end)` | 获取所有节假日   |
-| `nextWorkday(date)`              | 获取下一个工作日 |
-| `previousWorkday(date)`          | 获取上一个工作日 |
+| 方法                                       | 说明                 |
+| ------------------------------------------ | -------------------- |
+| `countWorkdays(start, end)`                | 计算工作日数量       |
+| `getWorkdaysInRange(start, end)`           | 获取所有工作日       |
+| `getHolidaysInRange(start, end)`           | 获取所有节假日       |
+| `nextWorkday(date)`                        | 获取下一个工作日     |
+| `previousWorkday(date)`                    | 获取上一个工作日     |
+| `getWorkdaysInterval(start, end)`          | 计算两日期间工作日数 |
+| `addWorkdays(date, n)`                     | 增减工作日           |
+| `getWorkdaySequence(start, end, interval)` | 获取工作日序列       |
+| `getAnnualStats(year)`                     | 年度统计             |
+
+### 节假日提醒功能
+
+| 方法                                     | 说明               |
+| ---------------------------------------- | ------------------ |
+| `getNextHoliday(date)`                   | 获取下一个节假日   |
+| `daysUntilHoliday(date)`                 | 距下个节假日天数   |
+| `isHolidayApproaching(date, daysBefore)` | 节假日是否临近     |
+| `getConsecutiveHolidays(date)`           | 获取连续节假日天数 |
+
+### 自定义工作日安排
+
+| 方法                            | 说明                   |
+| ------------------------------- | ---------------------- |
+| `setWorkSchedule(id, schedule)` | 设置自定义安排         |
+| `getWorkSchedule(id)`           | 获取自定义安排         |
+| `isWorkdayCustom(date, id)`     | 按自定义安排判断工作日 |
+| `isHolidayCustom(date, id)`     | 按自定义安排判断节假日 |
+| `clearWorkSchedule(id)`         | 清除自定义安排         |
+| `getAvailableSchedules()`       | 获取可用安排列表       |
+
+### 高级统计功能
+
+| 方法                                | 说明             |
+| ----------------------------------- | ---------------- |
+| `getMonthlyStats(year, month)`      | 月度统计         |
+| `getWorkdayRatio(start, end)`       | 工作日比例       |
+| `getMostCommonHoliday(year)`        | 最常见节假日     |
+| `getHolidaysByFestival(start, end)` | 按节日分组节假日 |
+
+### 工作时间相关功能
+
+| 方法                                          | 说明             |
+| --------------------------------------------- | ---------------- |
+| `getTotalDays(start, end)`                    | 获取总天数       |
+| `calculateWorkHours(start, end, hoursPerDay)` | 计算工作小时     |
+| `getWeekRange(date, startDay)`                | 获取周范围       |
+| `getMonthRange(date)`                         | 获取月范围       |
+| `isWithinOfficeHours(date, options)`          | 是否在办公时间内 |
 
 ### 其他
 
-| 方法                  | 说明         |
-| --------------------- | ------------ |
-| `getCacheStats()`     | 获取缓存统计 |
-| `addDays(date, days)` | 日期加减     |
+| 方法              | 说明         |
+| ----------------- | ------------ |
+| `getCacheStats()` | 获取缓存统计 |
+| `clearCache()`    | 清除缓存     |
+
+### 新功能使用示例
+
+```js
+import {
+  getNextHoliday,
+  getWorkdayRatio,
+  setWorkSchedule,
+  isWithinOfficeHours
+} from 'chinese-workday'
+
+// 节假日临近提醒
+const nextHoliday = getNextHoliday('2024-09-25')
+console.log(nextHoliday) // { date: '2024-10-01', festival: '国庆节', daysUntil: 6 }
+
+// 工作日比例统计
+const ratio = getWorkdayRatio('2024-01-01', '2024-12-31')
+console.log(ratio.workdayPercentage) // 全年工作日占比
+
+// 自定义工作安排
+setWorkSchedule('my_company', {
+  workdays: [1, 2, 3, 4, 5], // 周一到周五
+  holidays: ['2024-01-01', '2024-12-25'], // 特殊假期
+  workdaysOnWeekends: ['2024-02-04', '2024-02-11'] // 调休工作日
+})
+
+// 办公时间判断
+const now = new Date()
+const inOffice = isWithinOfficeHours(now, {
+  startHour: 9,
+  endHour: 18,
+  startDay: 1,
+  endDay: 6 // 周一到周六
+})
+```
 
 ### 支持的输入格式
 
