@@ -380,3 +380,35 @@ export function convertTimezoneAndCheckWorkday(
   toTimezone: string,
   checkWorkday?: boolean
 ): TimezoneConversionResult
+
+// Workday event scheduling functions (v2.2.0+)
+export function scheduleEventNextWorkday(
+  eventId: string,
+  callback: (date: string) => void,
+  startDate?: string | Date | number
+): string
+
+export function scheduleEventOnWorkday(
+  eventId: string,
+  callback: (date: string) => void,
+  targetDate: string | Date | number
+): string
+
+export function scheduleEventAfterWorkdays(
+  eventId: string,
+  callback: (date: string) => void,
+  workdays: number,
+  startDate?: string | Date | number
+): string
+
+export function cancelScheduledEvent(eventId: string): boolean
+
+export interface ScheduledEvent {
+  eventId: string
+  callback: (date: string) => void
+  scheduledDate: string
+  type: string
+}
+export function getScheduledEvent(eventId: string): ScheduledEvent | null
+
+export function getAllScheduledEvents(): ScheduledEvent[]

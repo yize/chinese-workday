@@ -2473,6 +2473,185 @@ function convertTimezoneAndCheckWorkday(date, fromTimeZone, toTimeZone, checkWor
   }
 }
 
+// ============================================================================
+// Workday Event Scheduling Functions (New Features)
+// ============================================================================
+
+// Store scheduled events
+let scheduledEvents = {}
+let eventTimers = {}
+
+/**
+ * Schedule a function to run on the next workday
+ * @param {string} eventId Unique identifier for the event
+ * @param {Function} callback Function to execute
+ * @param {string|Date|number} startDate Start date to calculate from (optional)
+ * @returns {string} Event ID
+ */
+function scheduleEventNextWorkday(eventId, callback, startDate) {
+  if (typeof callback !== 'function') {
+    throw new Error('Callback must be a function')
+  }
+
+  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date
+  const nextWorkdayDate = nextWorkday(start)
+
+  if (!nextWorkdayDate) {
+    throw new Error('Could not find next workday within reasonable range')
+  }
+
+  const eventDate = new Date(nextWorkdayDate + 'T00:00:00')
+  const now = new Date()
+  const timeUntilEvent = eventDate.getTime() - now.getTime()
+
+  // Clear any existing timer for this event
+  if (eventTimers[eventId]) {
+    clearTimeout(eventTimers[eventId])
+  }
+
+  // Store event info
+  scheduledEvents[eventId] = {
+    callback,
+    scheduledDate: nextWorkdayDate,
+    type: 'next_workday'
+  }
+
+  // Set timer if the event is in the future
+  if (timeUntilEvent > 0) {
+    eventTimers[eventId] = setTimeout(() => {
+      callback(nextWorkdayDate)
+      // Remove event after execution
+      delete scheduledEvents[eventId]
+      delete eventTimers[eventId]
+    }, timeUntilEvent)
+  } else {
+    // If the time has already passed today, execute immediately
+    callback(nextWorkdayDate)
+    delete scheduledEvents[eventId]
+    delete eventTimers[eventId]
+  }
+
+  return eventId
+}
+
+/**
+ * Schedule a function to run on a specific future workday
+ * @param {string} eventId Unique identifier for the event
+ * @param {Function} callback Function to execute
+ * @param {string|Date|number} targetDate Target workday date
+ * @returns {string} Event ID
+ */
+function scheduleEventOnWorkday(eventId, callback, targetDate) {
+  if (typeof callback !== 'function') {
+    throw new Error('Callback must be a function')
+  }
+
+  const target = formatDate(targetDate).date
+
+  if (!isWorkday(target)) {
+    throw new Error(`Target date ${target} is not a workday`)
+  }
+
+  const eventDate = new Date(target + 'T00:00:00')
+  const now = new Date()
+  const timeUntilEvent = eventDate.getTime() - now.getTime()
+
+  // Clear any existing timer for this event
+  if (eventTimers[eventId]) {
+    clearTimeout(eventTimers[eventId])
+  }
+
+  // Store event info
+  scheduledEvents[eventId] = {
+    callback,
+    scheduledDate: target,
+    type: 'specific_workday'
+  }
+
+  if (timeUntilEvent > 0) {
+    eventTimers[eventId] = setTimeout(() => {
+      callback(target)
+      // Remove event after execution
+      delete scheduledEvents[eventId]
+      delete eventTimers[eventId]
+    }, timeUntilEvent)
+  } else {
+    // If the time has already passed, execute immediately
+    callback(target)
+    delete scheduledEvents[eventId]
+    delete eventTimers[eventId]
+  }
+
+  return eventId
+}
+
+/**
+ * Schedule a function to run after a specific number of workdays
+ * @param {string} eventId Unique identifier for the event
+ * @param {Function} callback Function to execute
+ * @param {number} workdays Number of workdays to wait
+ * @param {string|Date|number} startDate Start date to calculate from (optional)
+ * @returns {string} Event ID
+ */
+function scheduleEventAfterWorkdays(eventId, callback, workdays, startDate) {
+  if (typeof callback !== 'function') {
+    throw new Error('Callback must be a function')
+  }
+
+  if (typeof workdays !== 'number' || workdays < 1) {
+    throw new Error('Workdays must be a positive number')
+  }
+
+  const start = startDate ? formatDate(startDate).date : formatDate(new Date()).date
+  const futureDate = addWorkdays(start, workdays)
+
+  if (!futureDate) {
+    throw new Error(`Could not calculate a date ${workdays} workdays from ${start}`)
+  }
+
+  return scheduleEventOnWorkday(eventId, callback, futureDate)
+}
+
+/**
+ * Cancel a scheduled event
+ * @param {string} eventId Event ID to cancel
+ * @returns {boolean} True if event was cancelled, false if not found
+ */
+function cancelScheduledEvent(eventId) {
+  if (eventTimers[eventId]) {
+    clearTimeout(eventTimers[eventId])
+    delete eventTimers[eventId]
+    delete scheduledEvents[eventId]
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Get information about a scheduled event
+ * @param {string} eventId Event ID to query
+ * @returns {Object|null} Event information or null if not found
+ */
+function getScheduledEvent(eventId) {
+  return scheduledEvents[eventId] || null
+}
+
+/**
+ * Get all scheduled events
+ * @returns {Array} Array of scheduled event information
+ */
+function getAllScheduledEvents() {
+  const events = []
+  for (const [id, event] of Object.entries(scheduledEvents)) {
+    events.push({
+      eventId: id,
+      ...event
+    })
+  }
+  return events
+}
+
 // Export functions (must be at the end after all function definitions)
 export {
   isWorkday,
@@ -2532,5 +2711,12 @@ export {
   // Time zone support functions added in v2.1.0
   isWorkdayInTimezone,
   getWorkdayInMultipleTimezones,
-  convertTimezoneAndCheckWorkday
+  convertTimezoneAndCheckWorkday,
+  // Workday event scheduling functions added in v2.2.0
+  scheduleEventNextWorkday,
+  scheduleEventOnWorkday,
+  scheduleEventAfterWorkdays,
+  cancelScheduledEvent,
+  getScheduledEvent,
+  getAllScheduledEvents
 }

@@ -161,7 +161,8 @@ import {
   setLeaveBalance,
   applyLeave,
   generateCalendar,
-  isWorkdayInTimezone
+  isWorkdayInTimezone,
+  scheduleEventNextWorkday
 } from 'chinese-workday'
 
 // 节假日临近提醒
@@ -205,6 +206,24 @@ console.log('January 2024 calendar:', january2024[0]) // First week of January
 // 跨时区工作日判断
 const isWorkdayInNY = isWorkdayInTimezone('2024-05-06 10:00:00', 'America/New_York') // 中国标准时间下的工作日，在纽约时区是否为工作日
 const isWorkdayInUTC = isWorkdayInTimezone(Date.now(), 'UTC') // 当前时间在UTC时区是否为工作日
+
+// 工作日事件调度
+const eventId = scheduleEventNextWorkday(
+  'monthly_report',
+  (date) => {
+    console.log(`Run monthly report on next workday: ${date}`)
+  },
+  '2024-05-01'
+) // Schedule from May 1st
+
+// 或者安排在特定工作日执行
+scheduleEventOnWorkday(
+  'quarterly_meeting',
+  (date) => {
+    console.log(`Quarterly meeting scheduled for: ${date}`)
+  },
+  '2024-06-15'
+) // Assuming June 15th is a workday
 ```
 
 ### 支持的输入格式

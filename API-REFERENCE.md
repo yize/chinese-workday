@@ -12,6 +12,7 @@
 - [假期管理](#假期管理功能)
 - [工作日历](#工作日历相关功能)
 - [时区支持](#时区支持功能)
+- [工作日事件调度](#工作日事件调度功能)
 
 ---
 
@@ -766,6 +767,80 @@ const isWorkdayInNY = isWorkdayInTimezone('2024-05-06 10:00:00', 'America/New_Yo
 
 **返回:** `TimezoneConversionResult` - 转换结果对象
 
+## 工作日事件调度功能
+
+### scheduleEventNextWorkday(eventId, callback, startDate)
+
+安排函数在下一个工作日运行
+
+**参数:**
+
+- `eventId` (string): 事件的唯一标识符
+- `callback` (function): 要执行的函数，接收日期字符串参数
+- `startDate` (string | Date | number): 开始计算的日期 (可选)
+
+**返回:** `string` - 事件ID
+
+**示例:**
+
+```js
+import { scheduleEventNextWorkday } from 'chinese-workday'
+scheduleEventNextWorkday('daily_task', (date) => {
+  console.log(`Daily task executed on: ${date}`)
+})
+```
+
+### scheduleEventOnWorkday(eventId, callback, targetDate)
+
+安排函数在特定工作日运行
+
+**参数:**
+
+- `eventId` (string): 事件的唯一标识符
+- `callback` (function): 要执行的函数，接收日期字符串参数
+- `targetDate` (string | Date | number): 目标工作日日期
+
+**返回:** `string` - 事件ID
+
+### scheduleEventAfterWorkdays(eventId, callback, workdays, startDate)
+
+安排函数在指定工作日数后运行
+
+**参数:**
+
+- `eventId` (string): 事件的唯一标识符
+- `callback` (function): 要执行的函数，接收日期字符串参数
+- `workdays` (number): 要等待的工作日数
+- `startDate` (string | Date | number): 开始计算的日期 (可选)
+
+**返回:** `string` - 事件ID
+
+### cancelScheduledEvent(eventId)
+
+取消已安排的事件
+
+**参数:**
+
+- `eventId` (string): 要取消的事件ID
+
+**返回:** `boolean` - 事件是否被取消
+
+### getScheduledEvent(eventId)
+
+获取已安排事件的信息
+
+**参数:**
+
+- `eventId` (string): 事件ID
+
+**返回:** `ScheduledEvent | null` - 事件信息或null
+
+### getAllScheduledEvents()
+
+获取所有已安排的事件
+
+**返回:** `Array<ScheduledEvent>` - 已安排事件的数组
+
 ## 类型定义
 
 ### AnnualStats
@@ -899,5 +974,15 @@ interface TimezoneConversionResult {
   isWorkdayInChina: boolean | undefined
   fromTimezone: string
   toTimezone: string
+}
+```
+
+### ScheduledEvent
+```ts
+interface ScheduledEvent {
+  eventId: string
+  callback: (date: string) => void
+  scheduledDate: string
+  type: string
 }
 ````
