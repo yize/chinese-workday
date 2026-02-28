@@ -1368,25 +1368,590 @@
     }
   }
 
+  // ============================================================================
+  // Holiday Reminder Functions (New Features)
+  // ============================================================================
+
+  /**
+   * Get the next holiday after the given date
+   * @param {string|Date|number} day Reference date
+   * @returns {Object|null} Object containing holiday date and festival name, or null if not found
+   */
+  function getNextHoliday(day) {
+    const startDate = formatDate(day).date;
+    let current = startDate;
+    const dateObj = new Date(current + 'T00:00:00');
+
+    // Look ahead up to 365 days
+    for (let i = 0; i < 365; i++) {
+      dateObj.setDate(dateObj.getDate() + 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const date = String(dateObj.getDate()).padStart(2, '0');
+      current = `${year}-${month}-${date}`;
+
+      if (HOLIDAYS[current]) {
+        return {
+          date: current,
+          festival: HOLIDAYS[current],
+          daysUntil: i + 1
+        }
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Get days until the next holiday
+   * @param {string|Date|number} day Reference date
+   * @returns {number} Days until next holiday, or -1 if not found within a year
+   */
+  function daysUntilHoliday(day) {
+    const nextHoliday = getNextHoliday(day);
+    return nextHoliday ? nextHoliday.daysUntil : -1
+  }
+
+  /**
+   * Check if the given date is a holiday approaching day (within n days before a holiday)
+   * @param {string|Date|number} day Reference date
+   * @param {number} daysBefore Number of days before holiday to consider as approaching (default: 1)
+   * @returns {boolean} True if approaching a holiday
+   */
+  function isHolidayApproaching(day, daysBefore = 1) {
+    const startDate = formatDate(day).date;
+    const dateObj = new Date(startDate + 'T00:00:00');
+
+    // Check next `daysBefore` days for holidays
+    for (let i = 1; i <= daysBefore; i++) {
+      dateObj.setDate(dateObj.getDate() + 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const date = String(dateObj.getDate()).padStart(2, '0');
+      const futureDate = `${year}-${month}-${date}`;
+
+      if (HOLIDAYS[futureDate]) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Get the number of consecutive holidays starting from the given date, if it's a holiday
+   * @param {string|Date|number} day Reference date
+   * @returns {number} Number of consecutive holidays starting from the date, or 0 if not a holiday
+   */
+  function getConsecutiveHolidays(day) {
+    const startDate = formatDate(day).date;
+
+    // If the start date is not a holiday, return 0
+    if (!HOLIDAYS[startDate]) {
+      return 0
+    }
+
+    let count = 1; // Start with 1 because the start date is a holiday
+    let current = startDate;
+    const dateObj = new Date(current + 'T00:00:00');
+
+    // Look forward for consecutive holidays
+    while (true) {
+      dateObj.setDate(dateObj.getDate() + 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const date = String(dateObj.getDate()).padStart(2, '0');
+      current = `${year}-${month}-${date}`;
+
+      // Check if it's a holiday or weekend that's part of the holiday period
+      if (HOLIDAYS[current] || (!isWorkday(current) && !isAddtionalWorkday(current))) {
+        count++;
+      } else {
+        break
+      }
+    }
+
+    return count
+  }
+
+  // ============================================================================
+  // Custom Work Schedule Functions (New Features)
+  // ============================================================================
+
+  // Store custom work schedules
+  let customSchedules = {};
+
+  /**
+   * Set a custom workday schedule
+   * @param {string} scheduleId ID for the schedule (e.g., 'default', 'shift1', 'company_a')
+   * @param {Object} schedule The schedule object defining workdays
+   * @param {Array} schedule.workdays Array of workdays (0=Sunday, 1=Monday, ..., 6=Saturday). Default: [1,2,3,4,5]
+   * @param {Array} schedule.holidays Array of holiday dates in 'YYYY-MM-DD' format
+   * @param {Array} schedule.workdaysOnWeekends Array of weekend dates that should be workdays in 'YYYY-MM-DD' format
+   */
+  function setWorkSchedule(scheduleId, schedule) {
+    const defaultSchedule = {
+      workdays: [1, 2, 3, 4, 5], // Monday to Friday
+      holidays: [],
+      workdaysOnWeekends: []
+    };
+
+    customSchedules[scheduleId] = { ...defaultSchedule, ...schedule };
+  }
+
+  /**
+   * Get the current work schedule
+   * @param {string} scheduleId ID of the schedule to get
+   * @returns {Object} The schedule object
+   */
+  function getWorkSchedule(scheduleId) {
+    return customSchedules[scheduleId] || null
+  }
+
+  /**
+   * Check if a date is a workday based on a custom schedule
+   * @param {string|Date|number} day Date to check
+   * @param {string} scheduleId ID of the custom schedule to use
+   * @returns {boolean} True if it's a workday according to the schedule
+   */
+  function isWorkdayCustom(day, scheduleId = 'default') {
+    const schedule = customSchedules[scheduleId];
+    if (!schedule) {
+      // If no custom schedule found, fall back to default behavior
+      return isWorkday(day)
+    }
+
+    const fd = formatDate(day);
+    const dateStr = fd.date;
+
+    // Check cache first
+    const cacheKey = `custom_${scheduleId}_${dateStr}`;
+    const cached = dateCache.get(cacheKey);
+    if (cached && cached.isWorkday !== undefined) {
+      return cached.isWorkday
+    }
+
+    // Check if it's explicitly defined as a workday on weekend
+    if (schedule.workdaysOnWeekends.includes(dateStr)) {
+      dateCache.set(cacheKey, { isWorkday: true });
+      return true
+    }
+
+    // Check if it's explicitly defined as a holiday
+    if (schedule.holidays.includes(dateStr)) {
+      dateCache.set(cacheKey, { isWorkday: false });
+      return false
+    }
+
+    // Determine based on day of week according to the custom schedule
+    const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay();
+    const isCustomWorkday = schedule.workdays.includes(dayOfWeek);
+
+    const result = isCustomWorkday;
+    dateCache.set(cacheKey, { isWorkday: result });
+    return result
+  }
+
+  /**
+   * Check if a date is a holiday based on a custom schedule
+   * @param {string|Date|number} day Date to check
+   * @param {string} scheduleId ID of the custom schedule to use
+   * @returns {boolean} True if it's a holiday according to the schedule
+   */
+  function isHolidayCustom(day, scheduleId = 'default') {
+    return !isWorkdayCustom(day, scheduleId)
+  }
+
+  /**
+   * Clear a custom work schedule
+   * @param {string} scheduleId ID of the schedule to remove
+   */
+  function clearWorkSchedule(scheduleId) {
+    delete customSchedules[scheduleId];
+  }
+
+  /**
+   * Get all available custom schedules
+   * @returns {Array} Array of schedule IDs
+   */
+  function getAvailableSchedules() {
+    return Object.keys(customSchedules)
+  }
+
+  // ============================================================================
+  // Advanced Statistics Functions (New Features)
+  // ============================================================================
+
+  /**
+   * Get monthly statistics for a specific year and month
+   * @param {number} year The year
+   * @param {number} month The month (1-12)
+   * @returns {Object} Statistics for the month
+   */
+  function getMonthlyStats(year, month) {
+    if (typeof year !== 'number' || year < 2011 || year > 2026) {
+      throw new Error('Year must be between 2011 and 2026')
+    }
+    if (typeof month !== 'number' || month < 1 || month > 12) {
+      throw new Error('Month must be between 1 and 12')
+    }
+
+    const monthStr = String(year) + '-' + String(month).padStart(2, '0');
+    const startDate = monthStr + '-01';
+
+    // Calculate the last day of the month
+    const dateObj = new Date(year, month, 0); // Month is 0-indexed in Date constructor, so use 'month' to get last day of 'month-1'
+    const daysInMonth = dateObj.getDate();
+    const endDate = monthStr + '-' + String(daysInMonth).padStart(2, '0');
+
+    let totalDays = 0;
+    let workdays = 0;
+    let holidays = 0;
+    let weekends = 0;
+    let additionalWorkdays = 0;
+
+    let current = startDate;
+    while (current <= endDate) {
+      totalDays++;
+
+      if (isWorkday(current)) {
+        workdays++;
+        if (isAddtionalWorkday(current)) {
+          additionalWorkdays++;
+        }
+      } else {
+        if (HOLIDAYS[current]) {
+          holidays++;
+        } else {
+          weekends++;
+        }
+      }
+
+      // Move to next day
+      const dateObj = new Date(current + 'T00:00:00');
+      dateObj.setDate(dateObj.getDate() + 1);
+      const nextYear = dateObj.getFullYear();
+      const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const nextDate = String(dateObj.getDate()).padStart(2, '0');
+      current = `${nextYear}-${nextMonth}-${nextDate}`;
+    }
+
+    return {
+      year,
+      month,
+      totalDays,
+      workdays,
+      holidays,
+      weekends,
+      additionalWorkdays,
+      workdayPercentage: parseFloat(((workdays / totalDays) * 100).toFixed(2))
+    }
+  }
+
+  /**
+   * Get workday ratio for a date range
+   * @param {string|Date|number} start Start date
+   * @param {string|Date|number} end End date
+   * @returns {Object} Object containing workday statistics for the range
+   */
+  function getWorkdayRatio(start, end) {
+    const startDate = formatDate(start).date;
+    const endDate = formatDate(end).date;
+    if (startDate > endDate) {
+      throw new Error('Start date must be before end date')
+    }
+
+    let totalDays = 0;
+    let workdays = 0;
+    let holidays = 0;
+    let weekends = 0;
+    let additionalWorkdays = 0;
+
+    let current = startDate;
+    while (current <= endDate) {
+      totalDays++;
+
+      if (isWorkday(current)) {
+        workdays++;
+        if (isAddtionalWorkday(current)) {
+          additionalWorkdays++;
+        }
+      } else {
+        if (HOLIDAYS[current]) {
+          holidays++;
+        } else {
+          weekends++;
+        }
+      }
+
+      // Move to next day
+      const dateObj = new Date(current + 'T00:00:00');
+      dateObj.setDate(dateObj.getDate() + 1);
+      const nextYear = dateObj.getFullYear();
+      const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const nextDate = String(dateObj.getDate()).padStart(2, '0');
+      current = `${nextYear}-${nextMonth}-${nextDate}`;
+    }
+
+    return {
+      startDate,
+      endDate,
+      totalDays,
+      workdays,
+      holidays,
+      weekends,
+      additionalWorkdays,
+      workdayCount: workdays,
+      workdayPercentage: parseFloat(((workdays / totalDays) * 100).toFixed(2)),
+      holidayPercentage: parseFloat(((holidays / totalDays) * 100).toFixed(2)),
+      weekendPercentage: parseFloat(((weekends / totalDays) * 100).toFixed(2))
+    }
+  }
+
+  /**
+   * Find the most common holiday/festival in a year
+   * @param {number} year Year to analyze
+   * @returns {Object|null} Object containing the most common holiday and its count
+   */
+  function getMostCommonHoliday(year) {
+    const stats = getAnnualStats(year);
+    if (!stats || !stats.holidayDistribution) {
+      return null
+    }
+
+    let mostCommon = null;
+    let maxCount = 0;
+
+    for (const [festival, count] of Object.entries(stats.holidayDistribution)) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommon = { festival, count };
+      }
+    }
+
+    return mostCommon
+  }
+
+  /**
+   * Get holidays in a date range grouped by festival
+   * @param {string|Date|number} start Start date
+   * @param {string|Date|number} end End date
+   * @returns {Object} Object with festival names as keys and arrays of dates as values
+   */
+  function getHolidaysByFestival(start, end) {
+    const startFormatted = formatDate(start).date;
+    const endFormatted = formatDate(end).date;
+    if (startFormatted > endFormatted) {
+      throw new Error('Start date must be before end date')
+    }
+
+    const festivalMap = {};
+
+    let current = startFormatted;
+    while (current <= endFormatted) {
+      const festival = HOLIDAYS[current];
+      if (festival) {
+        if (!festivalMap[festival]) {
+          festivalMap[festival] = [];
+        }
+        festivalMap[festival].push(current);
+      }
+
+      // Move to next day
+      const dateObj = new Date(current + 'T00:00:00');
+      dateObj.setDate(dateObj.getDate() + 1);
+      const nextYear = dateObj.getFullYear();
+      const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const nextDate = String(dateObj.getDate()).padStart(2, '0');
+      current = `${nextYear}-${nextMonth}-${nextDate}`;
+    }
+
+    return festivalMap
+  }
+
+  // ============================================================================
+  // Work Time Related Functions (New Features)
+  // ============================================================================
+
+  /**
+   * Calculate total days between two dates (including weekends and holidays)
+   * @param {string|Date|number} start Start date
+   * @param {string|Date|number} end End date
+   * @returns {number} Total number of days between the dates (inclusive)
+   */
+  function getTotalDays(start, end) {
+    const startDate = formatDate(start).date;
+    const endDate = formatDate(end).date;
+
+    const startObj = new Date(startDate + 'T00:00:00');
+    const endObj = new Date(endDate + 'T00:00:00');
+
+    const timeDiff = endObj.getTime() - startObj.getTime();
+    return Math.abs(Math.floor(timeDiff / (1000 * 60 * 60 * 24))) + 1 // +1 to make it inclusive
+  }
+
+  /**
+   * Calculate work hours between two dates based on 8-hour workdays
+   * @param {string|Date|number} start Start date
+   * @param {string|Date|number} end End date
+   * @param {number} hoursPerDay Number of work hours per day (default: 8)
+   * @returns {number} Total work hours between the dates
+   */
+  function calculateWorkHours(start, end, hoursPerDay = 8) {
+    const workdays = countWorkdays(start, end);
+    return workdays * hoursPerDay
+  }
+
+  /**
+   * Get the start and end dates of the week for a given date
+   * @param {string|Date|number} day Date to get week for
+   * @param {number} startDay Which day the week starts (0=Sunday, 1=Monday, default: 1)
+   * @returns {Object} Object with startDate and endDate of the week
+   */
+  function getWeekRange(day, startDay = 1) {
+    const fd = formatDate(day);
+    const dateObj = new Date(fd.date + 'T00:00:00');
+
+    const currentDayOfWeek = dateObj.getDay();
+    // Calculate how many days to go back to reach startDay
+    const daysToSubtract = (currentDayOfWeek - startDay + 7) % 7;
+
+    const startOfWeek = new Date(dateObj);
+    startOfWeek.setDate(dateObj.getDate() - daysToSubtract);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const startYear = startOfWeek.getFullYear();
+    const startMonth = String(startOfWeek.getMonth() + 1).padStart(2, '0');
+    const startDate = String(startOfWeek.getDate()).padStart(2, '0');
+    const weekStart = `${startYear}-${startMonth}-${startDate}`;
+
+    const endYear = endOfWeek.getFullYear();
+    const endMonth = String(endOfWeek.getMonth() + 1).padStart(2, '0');
+    const endDate = String(endOfWeek.getDate()).padStart(2, '0');
+    const weekEnd = `${endYear}-${endMonth}-${endDate}`;
+
+    return {
+      startDate: weekStart,
+      endDate: weekEnd
+    }
+  }
+
+  /**
+   * Get the start and end dates of the month for a given date
+   * @param {string|Date|number} day Date to get month for
+   * @returns {Object} Object with startDate and endDate of the month
+   */
+  function getMonthRange(day) {
+    const fd = formatDate(day);
+    const parts = fd.date.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1; // Month is 0-indexed in JavaScript Date
+
+    // First day of the month
+    const startOfMonth = new Date(year, month, 1);
+    // Last day of the month
+    const endOfMonth = new Date(year, month + 1, 0);
+
+    const startYear = startOfMonth.getFullYear();
+    const startMonth = String(startOfMonth.getMonth() + 1).padStart(2, '0');
+    const startDate = String(startOfMonth.getDate()).padStart(2, '0');
+    const monthStart = `${startYear}-${startMonth}-${startDate}`;
+
+    const endYear = endOfMonth.getFullYear();
+    const endMonth = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+    const endDate = String(endOfMonth.getDate()).padStart(2, '0');
+    const monthEnd = `${endYear}-${endMonth}-${endDate}`;
+
+    return {
+      startDate: monthStart,
+      endDate: monthEnd
+    }
+  }
+
+  /**
+   * Check if the given date is within office hours (placeholder implementation)
+   * @param {Date} date Date object with time
+   * @param {Object} options Office hours options
+   * @param {number} options.startHour Start hour of office (default: 9)
+   * @param {number} options.endHour End hour of office (default: 18)
+   * @param {number} options.startDay Start day of work week (default: 1 for Monday)
+   * @param {number} options.endDay End day of work week (default: 5 for Friday)
+   * @returns {boolean} True if within office hours
+   */
+  function isWithinOfficeHours(date, options = {}) {
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+    }
+
+    const {
+      startHour = 9,
+      endHour = 18,
+      startDay = 1, // Monday
+      endDay = 5 // Friday
+    } = options;
+
+    const dayOfWeek = date.getDay();
+    const hour = date.getHours();
+
+    // Check if it's a work day
+    if (dayOfWeek < startDay || dayOfWeek > endDay) {
+      return false
+    }
+
+    // Check if it's a holiday
+    const dateStr = formatDate(date).date;
+    if (!isWorkday(dateStr)) {
+      return false
+    }
+
+    // Check if within working hours
+    if (hour < startHour || hour >= endHour) {
+      return false
+    }
+
+    return true
+  }
+
   exports.addWorkdays = addWorkdays;
+  exports.calculateWorkHours = calculateWorkHours;
   exports.clearCache = clearCache;
+  exports.clearWorkSchedule = clearWorkSchedule;
   exports.countWorkdays = countWorkdays;
+  exports.daysUntilHoliday = daysUntilHoliday;
   exports.getAnnualStats = getAnnualStats;
+  exports.getAvailableSchedules = getAvailableSchedules;
   exports.getCacheStats = getCacheStats;
+  exports.getConsecutiveHolidays = getConsecutiveHolidays;
   exports.getFestival = getFestival;
   exports.getFestivalBatch = getFestivalBatch;
+  exports.getHolidaysByFestival = getHolidaysByFestival;
   exports.getHolidaysInRange = getHolidaysInRange;
   exports.getLunarInfo = getLunarInfo;
+  exports.getMonthRange = getMonthRange;
+  exports.getMonthlyStats = getMonthlyStats;
+  exports.getMostCommonHoliday = getMostCommonHoliday;
+  exports.getNextHoliday = getNextHoliday;
+  exports.getTotalDays = getTotalDays;
+  exports.getWeekRange = getWeekRange;
+  exports.getWorkSchedule = getWorkSchedule;
+  exports.getWorkdayRatio = getWorkdayRatio;
   exports.getWorkdaySequence = getWorkdaySequence;
   exports.getWorkdaysInRange = getWorkdaysInRange;
   exports.getWorkdaysInterval = getWorkdaysInterval;
   exports.isAddtionalWorkday = isAddtionalWorkday;
   exports.isHoliday = isHoliday;
+  exports.isHolidayApproaching = isHolidayApproaching;
   exports.isHolidayBatch = isHolidayBatch;
+  exports.isHolidayCustom = isHolidayCustom;
   exports.isWeekend = isWeekend;
+  exports.isWithinOfficeHours = isWithinOfficeHours;
   exports.isWorkday = isWorkday;
   exports.isWorkdayBatch = isWorkdayBatch;
+  exports.isWorkdayCustom = isWorkdayCustom;
   exports.nextWorkday = nextWorkday;
   exports.previousWorkday = previousWorkday;
+  exports.setWorkSchedule = setWorkSchedule;
 
 }));

@@ -174,3 +174,99 @@ export interface AnnualStats {
   holidayDistribution: { [festival: string]: number }
 }
 export function getAnnualStats(year: number): AnnualStats
+
+// Holiday reminder functions (v1.5.0+)
+export interface NextHolidayInfo {
+  date: string
+  festival: string
+  daysUntil: number
+}
+export function getNextHoliday(day: string | Date | number): NextHolidayInfo | null
+
+export function daysUntilHoliday(day: string | Date | number): number
+
+export function isHolidayApproaching(day: string | Date | number, daysBefore?: number): boolean
+
+export function getConsecutiveHolidays(day: string | Date | number): number
+
+// Custom work schedule functions (v1.6.0+)
+export interface WorkSchedule {
+  workdays: number[] // 0=Sunday, 1=Monday, ..., 6=Saturday
+  holidays: string[] // Array of YYYY-MM-DD strings
+  workdaysOnWeekends: string[] // Array of YYYY-MM-DD strings
+}
+export function setWorkSchedule(scheduleId: string, schedule: Partial<WorkSchedule>): void
+export function getWorkSchedule(scheduleId: string): WorkSchedule | null
+export function isWorkdayCustom(day: string | Date | number, scheduleId?: string): boolean
+export function isHolidayCustom(day: string | Date | number, scheduleId?: string): boolean
+export function clearWorkSchedule(scheduleId: string): void
+export function getAvailableSchedules(): string[]
+
+// Advanced statistics functions (v1.7.0+)
+export interface MonthlyStats {
+  year: number
+  month: number
+  totalDays: number
+  workdays: number
+  holidays: number
+  weekends: number
+  additionalWorkdays: number
+  workdayPercentage: number
+}
+export function getMonthlyStats(year: number, month: number): MonthlyStats
+
+export interface WorkdayRatio {
+  startDate: string
+  endDate: string
+  totalDays: number
+  workdays: number
+  holidays: number
+  weekends: number
+  additionalWorkdays: number
+  workdayCount: number
+  workdayPercentage: number
+  holidayPercentage: number
+  weekendPercentage: number
+}
+export function getWorkdayRatio(
+  start: string | Date | number,
+  end: string | Date | number
+): WorkdayRatio
+
+export interface CommonHoliday {
+  festival: string
+  count: number
+}
+export function getMostCommonHoliday(year: number): CommonHoliday | null
+
+export function getHolidaysByFestival(
+  start: string | Date | number,
+  end: string | Date | number
+): { [festival: string]: string[] }
+
+// Work time related functions (v1.8.0+)
+export function getTotalDays(start: string | Date | number, end: string | Date | number): number
+
+export function calculateWorkHours(
+  start: string | Date | number,
+  end: string | Date | number,
+  hoursPerDay?: number
+): number
+
+export function getWeekRange(
+  day: string | Date | number,
+  startDay?: number
+): { startDate: string; endDate: string }
+
+export function getMonthRange(day: string | Date | number): { startDate: string; endDate: string }
+
+export interface OfficeHoursOptions {
+  startHour?: number
+  endHour?: number
+  startDay?: number
+  endDay?: number
+}
+export function isWithinOfficeHours(
+  date: Date | string | number,
+  options?: OfficeHoursOptions
+): boolean
