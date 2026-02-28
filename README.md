@@ -31,7 +31,7 @@ console.log(getFestival('2024-10-01')) // "国庆节"
 ### 浏览器 / CDN
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/chinese-workday@1.16.1/dist/chinese-workday.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chinese-workday@2.0.0/dist/chinese-workday.min.js"></script>
 <script>
   const { isWorkday } = window.chineseWorkday
   console.log(isWorkday('2024-10-01')) // false
