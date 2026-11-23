@@ -26,6 +26,24 @@ console.log('\n=== 2011 Data Tests ===');
 test('isWorkday: 2011-01-01 should be false', isWorkday('2011-01-01') === false);
 test('getFestival: 2011-01-01 should be 元旦', getFestival('2011-01-01') === '元旦');
 
+console.log('\n=== 2027 Data Tests ===');
+test('isWorkday: 2027-01-01 (元旦) should be false', isWorkday('2027-01-01') === false);
+test('getFestival: 2027-01-03 should be 元旦', getFestival('2027-01-03') === '元旦');
+test('getFestival: 2027-02-05 (除夕) should be 春节', getFestival('2027-02-05') === '春节');
+test('getFestival: 2027-02-13 (正月初八) should be 春节', getFestival('2027-02-13') === '春节');
+test('isWorkday: 2027-01-31 (补春节) should be true', isWorkday('2027-01-31') === true);
+test('getFestival: 2027-01-31 should be 补春节', getFestival('2027-01-31') === '补春节');
+test('isWorkday: 2027-02-14 (补春节) should be true', isWorkday('2027-02-14') === true);
+test('getFestival: 2027-04-05 (清明节) should be 清明节', getFestival('2027-04-05') === '清明节');
+test('getFestival: 2027-05-05 (劳动节) should be 劳动节', getFestival('2027-05-05') === '劳动节');
+test('isWorkday: 2027-05-08 (补劳动节) should be true', isWorkday('2027-05-08') === true);
+test('getFestival: 2027-06-09 should be 端午节', getFestival('2027-06-09') === '端午节');
+test('getFestival: 2027-09-15 should be 中秋节', getFestival('2027-09-15') === '中秋节');
+test('getFestival: 2027-10-07 should be 国庆节', getFestival('2027-10-07') === '国庆节');
+test('isWorkday: 2027-09-26 (补国庆节) should be true', isWorkday('2027-09-26') === true);
+test('isWorkday: 2027-10-09 (补国庆节) should be true', isWorkday('2027-10-09') === true);
+test('countWorkdays: 2027-02-05 to 2027-02-13 should be 0', countWorkdays('2027-02-05', '2027-02-13') === 0);
+
 console.log('\n=== Advanced Functions ===');
 test('countWorkdays returns number', typeof countWorkdays('2024-05-01', '2024-05-10') === 'number');
 test('nextWorkday after holiday', nextWorkday('2024-10-01') === '2024-10-08');
@@ -73,6 +91,9 @@ test('Lunar: 2025-01-29 is Spring Festival', lunar2.lunarString === '正月初�
 
 const lunar3 = getLunarInfo('2026-02-17');
 test('Lunar: 2026-02-17 is Spring Festival', lunar3.lunarString === '正月初一');
+
+const lunar3b = getLunarInfo('2027-02-06');
+test('Lunar: 2027-02-06 is Spring Festival', lunar3b.lunarString === '正月初一');
 
 const lunar4 = getLunarInfo('2024-10-01');
 test('Lunar: 2024-10-01 dayOfWeek should be 工作日', lunar4.dayOfWeek === '工作日');

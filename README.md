@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/chinese-workday.svg)](https://www.npmjs.com/package/chinese-workday)
 ![Performance](https://img.shields.io/badge/performance-60%25%20faster-green)
 
-**解决开发者痛点**：准确判断中国工作日、节假日、调休日，支持 **2011-2026年** 完整数据。
+**解决开发者痛点**：准确判断中国工作日、节假日、调休日，支持 **2011-2027年** 完整数据。
 
 ## 🚀 快速开始
 
@@ -241,7 +241,7 @@ isWorkday(1727712000000) // 时间戳
 
 ## 📅 数据覆盖
 
-- ✅ 完整支持 **2011-2026 年** 法定节假日和调休
+- ✅ 完整支持 **2011-2027 年** 法定节假日和调休
 - ✅ 数据来源：国务院官方公告
 - ✅ 每年及时更新
 
@@ -260,4 +260,4 @@ MIT License
 
 ---
 
-数据覆盖 2011-2026 年 · 定期更新国务院最新节假日安排
+数据覆盖 2011-2027 年 · 定期更新国务院最新节假日安排

@@ -5,7 +5,7 @@
  *
  * Performance Improvements:
  * 1. Added LRU cache for query results (max 1000 entries)
- * 2. Pre-computed weekend dates (2011-2026)
+ * 2. Pre-computed weekend dates (2011-2027)
  * 3. Optimized date string formatting (avoid repeated operations)
  * 4. Added batch query support for multiple dates
  * 5. Reduced object allocations
@@ -37,6 +37,7 @@
 // - 2024 https://www.gov.cn/zhengce/zhengceku/202310/content_6911528.htm
 // - 2025 https://www.gov.cn/zhengce/content/202411/content_6986382.htm
 // - 2026 https://www.gov.cn/zhengce/content/202511/content_7047090.htm
+// - 2027 https://www.gov.cn/zhengce/content/202611/content_7085101.htm
 
 // ============================================================================
 // LRU Cache for query results
@@ -91,7 +92,7 @@ class LRUCache {
 const dateCache = new LRUCache(1000);
 
 // ============================================================================
-// Holiday Data (2011-2026)
+// Holiday Data (2011-2027)
 // ============================================================================
 var HOLIDAYS = {
   '2011-01-01': '元旦',
@@ -545,7 +546,36 @@ var HOLIDAYS = {
   '2026-10-04': '国庆节',
   '2026-10-05': '国庆节',
   '2026-10-06': '国庆节',
-  '2026-10-07': '国庆节'
+  '2026-10-07': '国庆节',
+  '2027-01-01': '元旦',
+  '2027-01-02': '元旦',
+  '2027-01-03': '元旦',
+  '2027-02-05': '春节',
+  '2027-02-06': '春节',
+  '2027-02-07': '春节',
+  '2027-02-08': '春节',
+  '2027-02-09': '春节',
+  '2027-02-10': '春节',
+  '2027-02-11': '春节',
+  '2027-02-12': '春节',
+  '2027-02-13': '春节',
+  '2027-04-03': '清明节',
+  '2027-04-04': '清明节',
+  '2027-04-05': '清明节',
+  '2027-05-01': '劳动节',
+  '2027-05-02': '劳动节',
+  '2027-05-03': '劳动节',
+  '2027-05-04': '劳动节',
+  '2027-05-05': '劳动节',
+  '2027-06-09': '端午节',
+  '2027-09-15': '中秋节',
+  '2027-10-01': '国庆节',
+  '2027-10-02': '国庆节',
+  '2027-10-03': '国庆节',
+  '2027-10-04': '国庆节',
+  '2027-10-05': '国庆节',
+  '2027-10-06': '国庆节',
+  '2027-10-07': '国庆节'
 };
 
 // ============================================================================
@@ -645,7 +675,12 @@ var WEEKENDS_WORKDAY = {
   '2026-02-28': '补春节',
   '2026-05-09': '补劳动节',
   '2026-09-20': '补国庆节',
-  '2026-10-10': '补国庆节'
+  '2026-10-10': '补国庆节',
+  '2027-01-31': '补春节',
+  '2027-02-14': '补春节',
+  '2027-05-08': '补劳动节',
+  '2027-09-26': '补国庆节',
+  '2027-10-09': '补国庆节'
 };
 
 // ============================================================================
@@ -1051,7 +1086,8 @@ const LUNAR_NEW_YEAR_DATES = {
   2023: '2023-01-22',
   2024: '2024-02-10',
   2025: '2025-01-29',
-  2026: '2026-02-17'
+  2026: '2026-02-17',
+  2027: '2027-02-06'
 };
 
 // A cache for lunar calculations to avoid repeated calculations
@@ -1315,8 +1351,8 @@ function getWorkdaySequence(start, end, interval = 1) {
  * @returns {Object} Statistics object with workdays, holidays, etc.
  */
 function getAnnualStats(year) {
-  if (typeof year !== 'number' || year < 2011 || year > 2026) {
-    throw new Error('Year must be between 2011 and 2026')
+  if (typeof year !== 'number' || year < 2011 || year > 2027) {
+    throw new Error('Year must be between 2011 and 2027')
   }
 
   const yearStr = String(year);
@@ -1592,8 +1628,8 @@ function getAvailableSchedules() {
  * @returns {Object} Statistics for the month
  */
 function getMonthlyStats(year, month) {
-  if (typeof year !== 'number' || year < 2011 || year > 2026) {
-    throw new Error('Year must be between 2011 and 2026')
+  if (typeof year !== 'number' || year < 2011 || year > 2027) {
+    throw new Error('Year must be between 2011 and 2027')
   }
   if (typeof month !== 'number' || month < 1 || month > 12) {
     throw new Error('Month must be between 1 and 12')

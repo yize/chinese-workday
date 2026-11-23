@@ -9,7 +9,7 @@ import * as workday from '../src/index.js'
 // Generate test data - 1000 random dates across multiple years
 const testDates = []
 for (let i = 0; i < 1000; i++) {
-  const year = 2011 + Math.floor(Math.random() * 16) // 2011-2026
+  const year = 2011 + Math.floor(Math.random() * 17) // 2011-2027
   const month = 1 + Math.floor(Math.random() * 12)
   const day = 1 + Math.floor(Math.random() * 28)
   testDates.push(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`)

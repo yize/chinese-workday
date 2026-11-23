@@ -265,7 +265,7 @@ nextWorkday('2024-10-01') // '2024-10-08' (国庆假期后首个工作日)
 
 **参数:**
 
-- `year` (number): 年份（2011-2026）
+- `year` (number): 年份（2011-2027）
 
 **返回:** `AnnualStats` - 统计数据对象
 
@@ -406,7 +406,7 @@ setWorkSchedule('my_company', {
 
 **参数:**
 
-- `year` (number): 年份（2011-2026）
+- `year` (number): 年份（2011-2027）
 - `month` (number): 月份（1-12）
 
 **返回:** `MonthlyStats` - 月度统计数据
@@ -428,7 +428,7 @@ setWorkSchedule('my_company', {
 
 **参数:**
 
-- `year` (number): 年份（2011-2026）
+- `year` (number): 年份（2011-2027）
 
 **返回:** `{festival: string, count: number} | null` - 最常见节假日信息
 
