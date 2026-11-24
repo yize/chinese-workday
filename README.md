@@ -1,3 +1,5 @@
+
+
 # 🇨🇳 Chinese Workday
 
 > 高性能中国工作日判断库 · 今天要上班吗？
@@ -229,7 +231,7 @@ scheduleEventOnWorkday(
 ### 支持的输入格式
 
 ```js
-isWorkday('2024-10-01') // 字符串
+isWorkday('2024-10-01') // 字符串（YYYY-MM-DD 或 YYYY/MM/DD）
 isWorkday(new Date()) // Date 对象
 isWorkday(1727712000000) // 时间戳
 ```
